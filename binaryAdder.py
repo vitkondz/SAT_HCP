@@ -149,47 +149,9 @@ def binaryAdder(graph):
     
     return cnf
 
-def solve(cnf):
-    g = Glucose3()
-    g.append_formula(cnf)
-    
-    start = time.time()
-    if g.solve():
-        end = time.time()
-        return g.get_model(), end-start
-    else:
-        end = time.time()
-        return None, end-start
-
-def print_result(model, N):
-    HCP = []
-    for var in model:
-        if var > 0:
-            for i in range(1, N+1):
-                for j in range(1, N+1):
-                    if var == getH(i, j):
-                        # print(i, "->", j)
-                        HCP.append((i, j))
-                    
-    print("Hamiltonian cycle:", end=" ")
-    vertex = 1
-    num = 1
-    while True:
-        print(vertex, end=" ")
-        for i, j in HCP:
-            if i == vertex:
-                vertex = j
-                break
-        if vertex == 1:
-            print("-> 1")
-            break
-        print("->", end=" ")
-        num += 1
-    print("Veticles: ", num)
-
 if __name__ == '__main__':
     
-    graph = init_graph_from_file("graphs/hc-28-4-1.col")
+    graph = init_graph_from_file("graphs/v_set/v-50-5.txt")
     
     HCPcnf = binaryAdder(graph)
     
@@ -197,7 +159,8 @@ if __name__ == '__main__':
     
     if isSat[0] is not None:
         print("Solution found")
-        print_result(isSat[0], graph.V)
+        print_result(isSat[0], graph.V, getH)
+        print("Number of clauses:", len(HCPcnf))
         print("Time:", isSat[1])
     else:
         print("No solution")

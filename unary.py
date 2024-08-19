@@ -19,8 +19,12 @@ def getU(i, j):
 # exactly one constraint
 def exactly_one(cnf, literals):
     ALO(cnf, literals)
-    AMO_binomial(cnf, literals) # AMO by binomial
     
+    AMO_binomial(cnf, literals) # AMO by binomial
+    # AMO_binary(cnf, literals) # AMO by binary
+    # AMO_sequential_encounter(cnf, literals) # AMO by sequential encounter
+    # AMO_commander(cnf, literals) # AMO by commander
+    # AMO_product(cnf, literals) # AMO by product    
     
 # add variables default with True/False to the cnf
 def add_default_variables(cnf, n, graph):
@@ -66,7 +70,7 @@ def vertex_positions(cnf, n):
                 cnf.append([-getH(i, j), -getU(i, p), getU(j, p+1)])
 
 # exactly one position for each vertex - constraints (6)
-def vertex_EO_positions(cnf, n, U):
+def vertex_EO_positions(cnf, n):
     for i in range(1, n+1):
         literals = [getU(i, p) for p in range(1, n+1)]
         exactly_one(cnf, literals)
@@ -85,49 +89,13 @@ def unary(graph):
     vertex_start(cnf, n)
     vertex_end(cnf, n)
     vertex_positions(cnf, n)
-    vertex_EO_positions(cnf, n, U)
+    vertex_EO_positions(cnf, n)
     
     return cnf
 
-def solve(cnf):
-    g = Glucose3()
-    g.append_formula(cnf)
-    
-    start = time.time()
-    if g.solve():
-        end = time.time()
-        return g.get_model(), end-start
-    else:
-        end = time.time()
-        return None, end-start
-    
-def print_result(model, N):
-    HCP = []
-    for var in model:
-        for i in range(1, N+1):
-            for j in range(1, N+1):
-                if var == getH(i, j):
-                    # print(i, "->", j)
-                    HCP.append((i, j))
-            
-    print("Hamiltonian cycle:", end=" ")
-    vertex = 1
-    while True:
-        print(vertex, end=" ")
-        for i, j in HCP:
-            if i == vertex:
-                vertex = j
-                break
-        if vertex == 1:
-            print("-> 1")
-            break
-        print("->", end=" ")
-    print("Veticles: ", len(HCP))
-    
-
 if __name__ == '__main__':
 
-    graph = init_graph_from_file("graphs/hc-28-5-2.col")
+    graph = init_graph_from_file("graphs/hc_set/hc-14.col")
     
     HCPcnf = unary(graph)
     
@@ -135,7 +103,8 @@ if __name__ == '__main__':
     
     if isSat[0] is not None:
         print("Solution found")
-        print_result(isSat[0], graph.V)
+        print_result(isSat[0], graph.V, getH)
+        print("Number of clauses:", len(HCPcnf))
         print("Time:", isSat[1])
     else:
         print("No solution")
