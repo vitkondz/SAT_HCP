@@ -15,10 +15,6 @@ def getP(i, bit):  # P(i, bit) = 1 if the i-th bit of the Pi is 1
         P[(i, bit)] = new_var()
     return P[(i, bit)]
 
-def exactly_one(cnf, literals):
-    ALO(cnf, literals)
-    AMO_binomial(cnf, literals)
-
 # add variables with default value to the cnf
 def add_default_variables(cnf, n, m, graph):
     # Hij = 0 if the arc (i, j) is not in the graph
@@ -66,7 +62,7 @@ def vertex_end(cnf, n, m):
         successor = "".zfill(m)
         for j in range(m-2, -1, -1):
             successor = successor[:j] + binaryN[j+1] + successor[j+1:]
-        # alt = int(binaryN[0]) ^ int(binaryN[2]) ^ int(binaryN[3]) ^ int(binaryN[5])
+        # alt = int(binaryN[0]) ^ int(binaryN[2]) ^ int(binaryN[3]) ^ int(binaryN[5]) # fibonacci taps
         alt = int(binaryN[0]) ^ int(binaryN[1])
         successor = successor[:m-1] + str(alt)
         binaryN = successor
@@ -97,14 +93,15 @@ def vertex_positions(cnf, n, m):
             # Xm-2 v Y0 v -Xm-1
             cnf.append([-getH(i, j), getP(i, m-2), getP(j, 0), -getP(i, m-1)])
 
-def lfsr(graph):
+def lfsr(graph, AMO_method="AMO_binomial"):
     n = graph.V
-    
+    AMO_encoding = AMO_method
     global H, P
     H = {}
     P = {}
     m = math.ceil(math.log(n+1, 2))
     cnf = []
+    set_varIndex(0)
     
     add_default_variables(cnf, n, m, graph)
     vertex_outgoing_arcs(cnf, n)
@@ -117,17 +114,14 @@ def lfsr(graph):
 
 if __name__ == '__main__':
     
-    graph = init_graph_from_file("graphs/v_set/v-50-5.txt")
+    graph = init_graph_from_file("graphs/v_set/v-30-4.txt")
     
-    HCPcnf = lfsr(graph)
+    print("Loading clauses...")
+    HCPcnf = lfsr(graph, "AMO_binomial")
     
-    isSat = solve(HCPcnf)
+    sol = solve(HCPcnf)
     
-    if isSat[0] is not None:
-        print("Solution found")
-        print_result(isSat[0], graph.V, getH)
-        print("Number of clauses:", len(HCPcnf))
-        print("Time:", isSat[1])
-    else:
-        print("No solution")
+    print_result(sol["model"], graph.V, getH)
+    print("Clauses:", sol["nofClauses"])
+    print("Variables:", sol["nofVariables"])
     

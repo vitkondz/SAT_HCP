@@ -15,16 +15,6 @@ def getU(i, j):
     if (i, j) not in U:
         U[(i, j)] = new_var()
     return U[(i, j)]
-
-# exactly one constraint
-def exactly_one(cnf, literals):
-    ALO(cnf, literals)
-    
-    AMO_binomial(cnf, literals) # AMO by binomial
-    # AMO_binary(cnf, literals) # AMO by binary
-    # AMO_sequential_encounter(cnf, literals) # AMO by sequential encounter
-    # AMO_commander(cnf, literals) # AMO by commander
-    # AMO_product(cnf, literals) # AMO by product    
     
 # add variables default with True/False to the cnf
 def add_default_variables(cnf, n, graph):
@@ -75,13 +65,14 @@ def vertex_EO_positions(cnf, n):
         literals = [getU(i, p) for p in range(1, n+1)]
         exactly_one(cnf, literals)
 
-def unary(graph):
+def unary(graph, AMO_method):
     n = graph.V
-    
+    set_AMO_encoding(AMO_method)
     global H, U
     H = {}
     U = {}
     cnf = []
+    set_varIndex(0)
     
     add_default_variables(cnf, n, graph)
     vertex_outgoing_arcs(cnf, n)
@@ -95,16 +86,13 @@ def unary(graph):
 
 if __name__ == '__main__':
 
-    graph = init_graph_from_file("graphs/hc_set/hc-14.col")
+    graph = init_graph_from_file("graphs/hc_set/hc-7.col")
     
-    HCPcnf = unary(graph)
+    print("Loading clauses...")
+    HCPcnf = unary(graph, "AMO_binomial")
     
-    isSat = solve(HCPcnf)
+    sol = solve(HCPcnf)
     
-    if isSat[0] is not None:
-        print("Solution found")
-        print_result(isSat[0], graph.V, getH)
-        print("Number of clauses:", len(HCPcnf))
-        print("Time:", isSat[1])
-    else:
-        print("No solution")
+    print_result(sol["model"], graph.V, getH)
+    print("Clauses:", sol["nofClauses"])
+    print("Variables:", sol["nofVariables"])

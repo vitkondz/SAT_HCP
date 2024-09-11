@@ -1,4 +1,10 @@
 data/
 _pycache_/
+__pycache__/
 ex.py
 exx.py
+id_rsa
+id_rsa.pub
+export.py
+log-file.txt
+output.xlsx

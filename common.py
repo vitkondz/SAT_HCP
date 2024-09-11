@@ -2,7 +2,8 @@
 
 import math
 import time
-from pysat.solvers import Glucose3
+from pysat.solvers import Glucose3, Solver
+from threading import Timer
 
 ########################################################################################
 # Common variable
@@ -11,9 +12,15 @@ H = {}
 U = {}
 P = {}
 HCPcnf = []
+AMO_encoding = None
+
+time_budget = 600
+
+# Sat solver function
+def interrupt(s): s.interrupt()
 
 ########################################################################################
-# Common function
+# Common function for Hamiltonian cycle problem
 def new_var():
     global varIndex
     varIndex += 1
@@ -21,6 +28,29 @@ def new_var():
 
 def get_varIndex():
     return varIndex
+
+def set_varIndex(index):
+    global varIndex
+    varIndex = index
+
+def set_AMO_encoding(AMO_method):
+    global AMO_encoding
+    AMO_encoding = AMO_method
+
+# exactly one constraint
+def exactly_one(cnf, literals):
+    ALO(cnf, literals)
+    
+    if AMO_encoding == "AMO_binomial":
+        AMO_binomial(cnf, literals) # AMO by binomial
+    elif AMO_encoding == "AMO_binary":
+        AMO_binary(cnf, literals)
+    elif AMO_encoding == "AMO_sequential_encounter":
+        AMO_sequential_encounter(cnf, literals)
+    elif AMO_encoding == "AMO_commander":
+        AMO_commander(cnf, literals)
+    elif AMO_encoding == "AMO_product":
+        AMO_product(cnf, literals) 
 
 # class Graph impliment by adjacency list
 class Graph:
@@ -48,21 +78,6 @@ def load_adjacency_list(url):
                     graph[u].append(v)
     return graph
 
-def load_adjacency_list_from_alb_file(url):
-    graph = {}
-    with open(url) as f:
-        for line in f:
-            if line.startswith("p"):
-                n = int(line.split()[2])
-                graph = {i: [] for i in range(1, n+1)}
-            else:
-                u, v = map(int, line.split())
-                if v not in graph[u]:
-                    graph[u].append(v)
-                if u not in graph[v]:
-                    graph[v].append(u)
-    return graph
-
 def load_adjacency_list_from_test_set(url):
     graph = {}
     with open(url) as f:
@@ -87,18 +102,52 @@ def init_graph_from_file(url):
     return graph
 
 def solve(cnf):
-    g = Glucose3()
-    g.append_formula(cnf)
+    print("Running SAT solver...")
+
+    result = {
+        "nofVariables": None,
+        "nofClauses": None,
+        "status": None,
+        "model": None,
+        "time": None,
+    }
     
-    start = time.time()
-    if g.solve():
-        end = time.time()
-        return g.get_model(), end-start
+    sat_solver = Glucose3(use_timer = True)
+    sat_solver.append_formula(cnf)
+    
+    result["nofClauses"] = sat_solver.nof_clauses()
+    result["nofVariables"] = sat_solver.nof_vars()
+    # print("nofClauses", sat_solver.nof_clauses())
+    # print("nofVariables", sat_solver.nof_vars())
+    
+    timer = Timer(time_budget, interrupt, [sat_solver])
+    timer.start()
+    
+    sat_status = sat_solver.solve_limited(expect_interrupt = True)
+    
+    if sat_status is False:
+        elapsed_time = float(format(sat_solver.time(), ".3f"))
+        result["status"] = "UNSAT"
+        result["time"] = elapsed_time
     else:
-        end = time.time()
-        return None, end-start
+        solution = sat_solver.get_model()
+        if solution is None:
+            result["status"] = "TIMEOUT"
+            result["time"] = time_budget
+        else:
+            elapsed_time = float(format(sat_solver.time(), ".3f"))
+            result["model"] = solution
+            result["status"] = "SAT"
+            result["time"] = elapsed_time
+    
+    timer.cancel()
+    sat_solver.delete()
+    return result
     
 def print_result(model, N, getH):
+    if model is None:
+        print("No solution found.")
+        return
     HCP = []
     for i in range(1, N+1):
         for j in range(1, N+1):
@@ -121,7 +170,6 @@ def print_result(model, N, getH):
         print("->", end=" ")
         num += 1
     print("Veticles of HC: ", num)
-    print("Number of variables:", varIndex)
 
 ########################################################################################
 # ALO constraint

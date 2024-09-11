@@ -1,4 +1,3 @@
-from pysat.solvers import Glucose3
 import time
 
 from common import *
@@ -15,10 +14,6 @@ def getP(i, bit):  # P(i, bit) = 1 if the i-th bit of the Pi is 1
     if (i, bit) not in P:
         P[(i, bit)] = new_var()
     return P[(i, bit)]
-
-def exactly_one(cnf, literals):
-    ALO(cnf, literals)
-    AMO_binomial(cnf, literals)
 
 # add variables with default value to the cnf
 def add_default_variables(cnf, n, m, graph):
@@ -94,8 +89,44 @@ def vertex_positions(cnf, n, m):
                     cnf.append([-getH(i, j), -getP(j, bit-1), getP(j, bit), -getP(i, bit)])
                     cnf.append([-getH(i, j), -getP(j, bit-1), -getP(j, bit), getP(i, bit)])
 
+
+def vertex_positions_v2(cnf, n, m):     # version 2 - two-bit incrementor
+    for i in range(2, n+1):
+        for j in range(2, n+1):
+            # bit == 0: # y0 = -x0
+            cnf.append([-getH(i, j), getP(i, 0), getP(j, 0)])
+            cnf.append([-getH(i, j), -getP(i, 0), -getP(j, 0)])
+            # bit == 1: # x0 -> y1 = -x1 and -x0 -> y1 = x1
+            cnf.append([-getH(i, j), -getP(i, 0), getP(i, 1), getP(j, 1)])
+            cnf.append([-getH(i, j), -getP(i, 0), -getP(i, 1), -getP(j, 1)])
+            cnf.append([-getH(i, j), getP(i, 0), getP(i, 1), -getP(j, 1)])
+            cnf.append([-getH(i, j), getP(i, 0), -getP(i, 1), getP(j, 1)]) 
+            
+            # for bit in range:
+            for bit in range(2, m-1, 2):
+                # ¬Yi−1 ∧ Xi−1 ⇒ Yi = ¬Xi
+                cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), -getP(j, bit), -getP(i,bit)])                
+                cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), getP(j, bit), getP(i,bit)])
+                
+                # ¬Yi−1 ∧ Xi−1 ∧ Xi ⇒ Yi+1 = ¬Xi+1
+                cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), -getP(i, bit), getP(j,bit+1), getP(i, bit+1)])
+                cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), -getP(i, bit), -getP(j,bit+1), -getP(i, bit+1)])
+                
+                # otherwise: Yi-1 -> ...
+                cnf.append([-getH(i, j), -getP(j, bit-1), -getP(i, bit), getP(j, bit)])
+                cnf.append([-getH(i, j), -getP(j, bit-1), getP(i, bit), -getP(j, bit)])
+                cnf.append([-getH(i, j), -getP(j, bit-1), -getP(i, bit+1), getP(j, bit+1)])
+                cnf.append([-getH(i, j), -getP(j, bit-1), getP(i, bit+1), -getP(j, bit+1)])
+                
+                # otherwise: -Xi-1 -> ...
+                cnf.append([-getH(i, j), getP(i, bit-1), -getP(i, bit), getP(j, bit)])
+                cnf.append([-getH(i, j), getP(i, bit-1), getP(i, bit), -getP(j, bit)])
+                cnf.append([-getH(i, j), getP(i, bit-1), -getP(i, bit+1), getP(j, bit+1)])
+                cnf.append([-getH(i, j), getP(i, bit-1), getP(i, bit+1), -getP(j, bit+1)])
+                
+
 # CAUTION: This function is not correct at present, it is just a draft
-def vertex_positions_v2(cnf, n, m):     # version 2 - four-bit incrementor
+def vertex_positions_v3(cnf, n, m):     # version 3 - four-bit incrementor
     for i in range(2, n+1):
         for j in range(2, n+1):
             # bit == 0: # y0 = -x0
@@ -131,37 +162,35 @@ def vertex_positions_v2(cnf, n, m):     # version 2 - four-bit incrementor
                 cnf.append([-getH(i, j), getP(i, bit-3), -getP(i, bit-4), -getP(i, bit-5), getP(j, bit-5), getP(j, bit-3)]) #21
                 
     
-def binaryAdder(graph):
+def binaryAdder(graph, AMO_method):
     n = graph.V
-    
+    set_AMO_encoding(AMO_method)
     global H, P
     H = {}
     P = {}
     m = math.ceil(math.log2(n)) if math.log2(n) != int(math.log2(n)) else int(math.log2(n)) + 1
     cnf = []
-    
+    set_varIndex(0)
+        
     add_default_variables(cnf, n, m, graph)
     vertex_outgoing_arcs(cnf, n)
     vertex_incoming_arcs(cnf, n)
     vertex_start(cnf, n, m)
     vertex_end(cnf, n, m)
-    vertex_positions(cnf, n, m)
+    vertex_positions_v3(cnf, n, m)
     
     return cnf
 
 if __name__ == '__main__':
     
-    graph = init_graph_from_file("graphs/v_set/v-50-5.txt")
+    graph = init_graph_from_file("graphs/v_set/v-120-5.txt")
     
-    HCPcnf = binaryAdder(graph)
+    print("Loading clauses...")
+    HCPcnf = binaryAdder(graph, "AMO_binomial")
     
-    isSat = solve(HCPcnf)
+    sol = solve(HCPcnf)
     
-    if isSat[0] is not None:
-        print("Solution found")
-        print_result(isSat[0], graph.V, getH)
-        print("Number of clauses:", len(HCPcnf))
-        print("Time:", isSat[1])
-    else:
-        print("No solution")
+    print_result(sol["model"], graph.V, getH)
+    print("Clauses:", sol["nofClauses"])
+    print("Variables:", sol["nofVariables"])
     
