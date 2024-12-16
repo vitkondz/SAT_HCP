@@ -121,7 +121,7 @@ if __name__ == '__main__':
     
     sol = solve(HCPcnf)
     
-    print_result(sol["model"], graph.V, getH)
+    print_result(sol["model"], graph.V, getH, sol)
     print("Clauses:", sol["nofClauses"])
     print("Variables:", sol["nofVariables"])
     

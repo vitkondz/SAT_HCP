@@ -1,6 +1,7 @@
 data/
 _pycache_/
 __pycache__/
+**/__pycache__/
 ex.py
 exx.py
 id_rsa

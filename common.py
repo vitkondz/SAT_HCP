@@ -52,6 +52,11 @@ def exactly_one(cnf, literals):
     elif AMO_encoding == "AMO_product":
         AMO_product(cnf, literals) 
 
+# exactly one vertion pbLib
+# def exactly_one(cnf, literals):
+    
+
+
 # class Graph impliment by adjacency list
 class Graph:
     def __init__(self, vertices):
@@ -94,8 +99,23 @@ def load_adjacency_list_from_test_set(url):
                     graph[u].append(v)
     return graph
 
+def load_adjacency_list_benmark_set(url):
+    graph = {}
+    with open(url) as f:
+        for line in f:
+            if line.startswith("D"):
+                n = int(line.split()[1])
+                graph = {i: [] for i in range(1, n+1)}
+            else:
+                if line[0].isdigit() and int(line[0]) != -1:
+                    u, v = map(int, line.split())
+                    if v not in graph[u]:
+                        graph[u].append(v)            
+    return graph
+
 def init_graph_from_file(url):
     gr = load_adjacency_list_from_test_set(url)
+    # gr = load_adjacency_list_benmark_set(url)
     N = len(gr)
     graph = Graph(N)
     graph.setGraph(gr)
@@ -110,6 +130,7 @@ def solve(cnf):
         "status": None,
         "model": None,
         "time": None,
+        "vOfHC": None
     }
     
     sat_solver = Glucose3(use_timer = True)
@@ -144,7 +165,7 @@ def solve(cnf):
     sat_solver.delete()
     return result
     
-def print_result(model, N, getH):
+def print_result(model, N, getH, sat):
     if model is None:
         print("No solution found.")
         return
@@ -170,6 +191,7 @@ def print_result(model, N, getH):
         print("->", end=" ")
         num += 1
     print("Veticles of HC: ", num)
+    sat["vOfHC"] = num
 
 ########################################################################################
 # ALO constraint

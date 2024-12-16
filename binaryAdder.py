@@ -9,7 +9,7 @@ def getH(i, j):
         H[(i, j)] = new_var()
     return H[(i, j)]
 
-def getP(i, bit):  # P(i, bit) = 1 if the i-th bit of the Pi is 1
+def getP(i, bit):  # P(i, bit) = 1 if the bit-th bit of the Pi is 1
     global P
     if (i, bit) not in P:
         P[(i, bit)] = new_var()
@@ -82,15 +82,15 @@ def vertex_positions(cnf, n, m):
                     #carry = 1, -Yi-1 ^ Xi-1 -> Yi = -Xi
                     cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), getP(j, bit), getP(i, bit)])
                     cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), -getP(j, bit), -getP(i, bit)])
-                    # carry = 0, -Yi-1 ^ -Xi-1 -> Yi = Xi
-                    cnf.append([-getH(i, j), getP(j, bit-1), getP(i, bit-1), getP(j, bit), -getP(i, bit)])
-                    cnf.append([-getH(i, j), getP(j, bit-1), getP(i, bit-1), -getP(j, bit), getP(i, bit)])
+                    # carry = 0, -Xi-1 -> Yi = Xi
+                    cnf.append([-getH(i, j), getP(i, bit-1), getP(j, bit), -getP(i, bit)])
+                    cnf.append([-getH(i, j), getP(i, bit-1), -getP(j, bit), getP(i, bit)])
                     # carry = 0, Yi-1 -> Yi = Xi
                     cnf.append([-getH(i, j), -getP(j, bit-1), getP(j, bit), -getP(i, bit)])
                     cnf.append([-getH(i, j), -getP(j, bit-1), -getP(j, bit), getP(i, bit)])
 
 
-def vertex_positions_v2(cnf, n, m):     # version 2 - two-bit incrementor
+def vertex_positions_v2(cnf, n, m):     # version 2 - two-bit incrementor using 14 clauses
     for i in range(2, n+1):
         for j in range(2, n+1):
             # bit == 0: # y0 = -x0
@@ -105,28 +105,43 @@ def vertex_positions_v2(cnf, n, m):     # version 2 - two-bit incrementor
             # for bit in range:
             for bit in range(2, m-1, 2):
                 # ¬Yi−1 ∧ Xi−1 ⇒ Yi = ¬Xi
-                cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), -getP(j, bit), -getP(i,bit)])                
-                cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), getP(j, bit), getP(i,bit)])
+                cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), -getP(j, bit), -getP(i, bit)])
+                cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), getP(j, bit), getP(i, bit)])
                 
                 # ¬Yi−1 ∧ Xi−1 ∧ Xi ⇒ Yi+1 = ¬Xi+1
-                cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), -getP(i, bit), getP(j,bit+1), getP(i, bit+1)])
-                cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), -getP(i, bit), -getP(j,bit+1), -getP(i, bit+1)])
+                cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), -getP(i, bit), getP(j, bit+1), getP(i, bit+1)])
+                cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), -getP(i, bit), -getP(j, bit+1), -getP(i, bit+1)])
                 
-                # otherwise: Yi-1 -> ...
+                # otherwise: Yi-1 -> Yi = Xi && Yi+1 = Xi+1
                 cnf.append([-getH(i, j), -getP(j, bit-1), -getP(i, bit), getP(j, bit)])
                 cnf.append([-getH(i, j), -getP(j, bit-1), getP(i, bit), -getP(j, bit)])
                 cnf.append([-getH(i, j), -getP(j, bit-1), -getP(i, bit+1), getP(j, bit+1)])
                 cnf.append([-getH(i, j), -getP(j, bit-1), getP(i, bit+1), -getP(j, bit+1)])
                 
-                # otherwise: -Xi-1 -> ...
+                # otherwise: -Xi-1 -> Yi = Xi && Yi+1 = Xi+1
                 cnf.append([-getH(i, j), getP(i, bit-1), -getP(i, bit), getP(j, bit)])
                 cnf.append([-getH(i, j), getP(i, bit-1), getP(i, bit), -getP(j, bit)])
                 cnf.append([-getH(i, j), getP(i, bit-1), -getP(i, bit+1), getP(j, bit+1)])
                 cnf.append([-getH(i, j), getP(i, bit-1), getP(i, bit+1), -getP(j, bit+1)])
                 
+                #special
+                cnf.append([-getH(i, j), getP(i, bit), getP(j, bit+1), -getP(i, bit+1)])
+                cnf.append([-getH(i, j), getP(i, bit), -getP(j, bit+1), getP(i, bit+1)])
+            
+            # the last bit if remain
+            if m%2 == 1:
+                bit = m-1
+                #carry = 1, -Yi-1 ^ Xi-1 -> Yi = -Xi
+                cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), getP(j, bit), getP(i, bit)])
+                cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), -getP(j, bit), -getP(i, bit)])
+                # carry = 0, -Xi-1 -> Yi = Xi
+                cnf.append([-getH(i, j), getP(i, bit-1), getP(j, bit), -getP(i, bit)])
+                cnf.append([-getH(i, j), getP(i, bit-1), -getP(j, bit), getP(i, bit)])
+                # carry = 0, Yi-1 -> Yi = Xi
+                cnf.append([-getH(i, j), -getP(j, bit-1), getP(j, bit), -getP(i, bit)])
+                cnf.append([-getH(i, j), -getP(j, bit-1), -getP(j, bit), getP(i, bit)])
 
-# CAUTION: This function is not correct at present, it is just a draft
-def vertex_positions_v3(cnf, n, m):     # version 3 - four-bit incrementor
+def vertex_positions_v2_2(cnf, n, m):     # version 2 - two-bit incrementor trying to reduce the number of clauses
     for i in range(2, n+1):
         for j in range(2, n+1):
             # bit == 0: # y0 = -x0
@@ -137,31 +152,170 @@ def vertex_positions_v3(cnf, n, m):     # version 3 - four-bit incrementor
             cnf.append([-getH(i, j), -getP(i, 0), -getP(i, 1), -getP(j, 1)])
             cnf.append([-getH(i, j), getP(i, 0), getP(i, 1), -getP(j, 1)])
             cnf.append([-getH(i, j), getP(i, 0), -getP(i, 1), getP(j, 1)]) 
-
-            for bit in range(6, m+1, 4):
-                cnf.append([-getH(i, j), getP(i, bit-1), getP(i, bit-4), -getP(j, bit-1)])                                  #1
-                cnf.append([-getH(i, j), getP(i, bit-1), -getP(j, bit-1), -getP(j, bit-2)])                                 #2
-                cnf.append([-getH(i, j), getP(i, bit-1), -getP(j, bit-1), -getP(j, bit-3)])                                 #3
-                cnf.append([-getH(i, j), getP(i, bit-1), -getP(j, bit-1), -getP(j, bit-4)])                                 #4
-                cnf.append([-getH(i, j), getP(i, bit-3), -getP(j, bit-3), -getP(j, bit-4)])                                 #5
-                cnf.append([-getH(i, j), -getP(i, bit-4), -getP(j, bit-5), getP(j, bit-4)])                                 #6
-                cnf.append([-getH(i, j), getP(i, bit-2), -getP(i, bit-3), getP(j, bit-2), getP(j, bit-3)])                  #7
-                cnf.append([-getH(i, j), getP(i, bit-4), getP(i, bit-5), -getP(j, bit-4)])                                  #8
-                cnf.append([-getH(i, j), -getP(i, bit-1), getP(j, bit-1)])                                                  #9
-                cnf.append([-getH(i, j), -getP(i, bit-2), -getP(i, bit-3), -getP(j, bit-2), getP(j, bit-3)])                #10
-                cnf.append([-getH(i, j), -getP(i, bit-3), -getP(i, bit-4), -getP(i, bit-5), getP(j, bit-5), -getP(j, bit-3)]) #11
-                cnf.append([-getH(i, j), getP(i, bit-2), getP(i, bit-4), -getP(j, bit-2)])                                  #12
-                cnf.append([-getH(i, j), getP(i, bit-3), getP(i, bit-4), -getP(j, bit-3)])                                  #13
-                cnf.append([-getH(i, j), getP(i, bit-2), -getP(j, bit-2), -getP(j, bit-3)])                                 #14
-                cnf.append([-getH(i, j), getP(i, bit-2), -getP(j, bit-2), -getP(j, bit-4)])                                 #15
-                cnf.append([-getH(i, j), -getP(i, bit-4), getP(i, bit-5), getP(j, bit-4)])                                  #16
-                cnf.append([-getH(i, j), getP(i, bit-1), -getP(i, bit-2), getP(j, bit-1), getP(j, bit-2)])                  #17
-                cnf.append([-getH(i, j), getP(i, bit-4), -getP(i, bit-5), getP(j, bit-5), getP(j, bit-4)])                  #18
-                cnf.append([-getH(i, j), getP(i, bit-4), -getP(j, bit-5), -getP(j, bit-4)])                                 #19
-                cnf.append([-getH(i, j), -getP(i, bit-1), -getP(i, bit-2), -getP(j, bit-1), getP(j, bit-2)])                #20
-                cnf.append([-getH(i, j), getP(i, bit-3), -getP(i, bit-4), -getP(i, bit-5), getP(j, bit-5), getP(j, bit-3)]) #21
+            
+            # for bit in range:
+            for bit in range(2, m-1, 2):
+                # ¬Yi−1 ∧ Xi−1 ⇒ Yi = ¬Xi
+                # cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), -getP(j, bit), -getP(i, bit)])
+                cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), getP(j, bit), getP(i, bit)])
                 
-    
+                # ¬Yi−1 ∧ Xi−1 ∧ Xi ⇒ Yi+1 = ¬Xi+1
+                cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), -getP(i, bit), getP(j, bit+1), getP(i, bit+1)])       # so far so good
+                cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), -getP(i, bit), -getP(j, bit+1), -getP(i, bit+1)])     # so far so good
+                
+                # otherwise: Yi-1 -> Yi = Xi
+                cnf.append([-getH(i, j), -getP(j, bit-1), -getP(i, bit), getP(j, bit)])
+                cnf.append([-getH(i, j), -getP(j, bit-1), getP(i, bit), -getP(j, bit)])
+                
+                # otherwise: -Xi-1 -> Yi = Xi
+                cnf.append([-getH(i, j), getP(i, bit-1), -getP(i, bit), getP(j, bit)])
+                cnf.append([-getH(i, j), getP(i, bit-1), getP(i, bit), -getP(j, bit)])
+                
+                #special: -Xi -> Yi+1 = Xi+1
+                cnf.append([-getH(i, j), getP(i, bit), getP(j, bit+1), -getP(i, bit+1)])
+                cnf.append([-getH(i, j), getP(i, bit), -getP(j, bit+1), getP(i, bit+1)])
+                
+                #special: Yi -> Yi+1 = Xi+1
+                cnf.append([-getH(i, j), -getP(j, bit), getP(j, bit+1), -getP(i, bit+1)])
+                cnf.append([-getH(i, j), -getP(j, bit), -getP(j, bit+1), getP(i, bit+1)])
+            
+            # the last bit if remain
+            if m%2 == 1:
+                bit = m-1
+                #carry = 1, -Yi-1 ^ Xi-1 -> Yi = -Xi
+                cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), getP(j, bit), getP(i, bit)])
+                cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), -getP(j, bit), -getP(i, bit)])
+                # carry = 0, -Xi-1 -> Yi = Xi
+                cnf.append([-getH(i, j), getP(i, bit-1), getP(j, bit), -getP(i, bit)])
+                cnf.append([-getH(i, j), getP(i, bit-1), -getP(j, bit), getP(i, bit)])
+                # carry = 0, Yi-1 -> Yi = Xi
+                cnf.append([-getH(i, j), -getP(j, bit-1), getP(j, bit), -getP(i, bit)])
+                cnf.append([-getH(i, j), -getP(j, bit-1), -getP(j, bit), getP(i, bit)])
+         
+                
+def vertex_positions_v3(cnf, n, m):     # version 3 - four-bit incrementor
+    for i in range(2, n+1):
+        for j in range(2, n+1):
+            for bit in range(m-4):
+                if bit == 0: # y0 = -x0
+                    cnf.append([-getH(i, j), getP(i, 0), getP(j, 0)])
+                    cnf.append([-getH(i, j), -getP(i, 0), -getP(j, 0)])
+                elif bit == 1: # x0 -> y1 = -x1 and -x0 -> y1 = x1
+                    cnf.append([-getH(i, j), -getP(i, 0), getP(i, 1), getP(j, 1)])
+                    cnf.append([-getH(i, j), -getP(i, 0), -getP(i, 1), -getP(j, 1)])
+                    cnf.append([-getH(i, j), getP(i, 0), getP(i, 1), -getP(j, 1)])
+                    cnf.append([-getH(i, j), getP(i, 0), -getP(i, 1), getP(j, 1)]) 
+                # version 1 - one-bit incrementor
+                else:
+                    #carry = 1, -Yi-1 ^ Xi-1 -> Yi = -Xi
+                    cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), getP(j, bit), getP(i, bit)])
+                    cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), -getP(j, bit), -getP(i, bit)])
+                    # carry = 0, -Yi-1 ^ -Xi-1 -> Yi = Xi
+                    cnf.append([-getH(i, j), getP(j, bit-1), getP(i, bit-1), getP(j, bit), -getP(i, bit)])
+                    cnf.append([-getH(i, j), getP(j, bit-1), getP(i, bit-1), -getP(j, bit), getP(i, bit)])
+                    # carry = 0, Yi-1 -> Yi = Xi
+                    cnf.append([-getH(i, j), -getP(j, bit-1), getP(j, bit), -getP(i, bit)])
+                    cnf.append([-getH(i, j), -getP(j, bit-1), -getP(j, bit), getP(i, bit)])
+            # top 4 bits 
+            bit = m
+            cnf.append([-getH(i, j), getP(i, bit-1), getP(i, bit-4), -getP(j, bit-1)])                                  #1
+            cnf.append([-getH(i, j), getP(i, bit-1), -getP(j, bit-1), -getP(j, bit-2)])                                 #2
+            cnf.append([-getH(i, j), getP(i, bit-1), -getP(j, bit-1), -getP(j, bit-3)])                                 #3
+            cnf.append([-getH(i, j), getP(i, bit-1), -getP(j, bit-1), -getP(j, bit-4)])                                 #4
+            cnf.append([-getH(i, j), getP(i, bit-3), -getP(j, bit-3), -getP(j, bit-4)])                                 #5
+            cnf.append([-getH(i, j), -getP(i, bit-4), -getP(j, bit-5), getP(j, bit-4)])                                 #6
+            cnf.append([-getH(i, j), getP(i, bit-2), -getP(i, bit-3), getP(j, bit-2), getP(j, bit-3)])                  #7
+            cnf.append([-getH(i, j), getP(i, bit-4), getP(i, bit-5), -getP(j, bit-4)])                                  #8
+            cnf.append([-getH(i, j), -getP(i, bit-1), getP(j, bit-1)])                                                  #9
+            cnf.append([-getH(i, j), -getP(i, bit-2), -getP(i, bit-3), -getP(j, bit-2), getP(j, bit-3)])                #10
+            cnf.append([-getH(i, j), -getP(i, bit-3), -getP(i, bit-4), -getP(i, bit-5), getP(j, bit-5), -getP(j, bit-3)]) #11
+            cnf.append([-getH(i, j), getP(i, bit-2), getP(i, bit-4), -getP(j, bit-2)])                                  #12
+            cnf.append([-getH(i, j), getP(i, bit-3), getP(i, bit-4), -getP(j, bit-3)])                                  #13
+            cnf.append([-getH(i, j), getP(i, bit-2), -getP(j, bit-2), -getP(j, bit-3)])                                 #14
+            cnf.append([-getH(i, j), getP(i, bit-2), -getP(j, bit-2), -getP(j, bit-4)])                                 #15
+            cnf.append([-getH(i, j), -getP(i, bit-4), getP(i, bit-5), getP(j, bit-4)])                                  #16
+            cnf.append([-getH(i, j), getP(i, bit-1), -getP(i, bit-2), getP(j, bit-1), getP(j, bit-2)])                  #17
+            cnf.append([-getH(i, j), getP(i, bit-4), -getP(i, bit-5), getP(j, bit-5), getP(j, bit-4)])                  #18
+            cnf.append([-getH(i, j), getP(i, bit-4), -getP(j, bit-5), -getP(j, bit-4)])                                 #19
+            cnf.append([-getH(i, j), -getP(i, bit-1), -getP(i, bit-2), -getP(j, bit-1), getP(j, bit-2)])                #20
+            cnf.append([-getH(i, j), getP(i, bit-3), -getP(i, bit-4), -getP(i, bit-5), getP(j, bit-5), getP(j, bit-3)]) #21
+            
+def vertex_positions_final(cnf, n, m):     # version final - 2 and 4-bit incrementor
+    for i in range(2, n+1):
+        for j in range(2, n+1):
+            # bit == 0: # y0 = -x0
+            cnf.append([-getH(i, j), getP(i, 0), getP(j, 0)])
+            cnf.append([-getH(i, j), -getP(i, 0), -getP(j, 0)])
+            # bit == 1: # x0 -> y1 = -x1 and -x0 -> y1 = x1
+            cnf.append([-getH(i, j), -getP(i, 0), getP(i, 1), getP(j, 1)])
+            cnf.append([-getH(i, j), -getP(i, 0), -getP(i, 1), -getP(j, 1)])
+            cnf.append([-getH(i, j), getP(i, 0), getP(i, 1), -getP(j, 1)])
+            cnf.append([-getH(i, j), getP(i, 0), -getP(i, 1), getP(j, 1)]) 
+            
+            # 2-bit incrementor
+            for bit in range(2, m-4, 2):
+                # ¬Yi−1 ∧ Xi−1 ⇒ Yi = ¬Xi
+                # remove the clause of -getP(j, bit) and -getP(j, bit)
+                cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), getP(j, bit), getP(i, bit)])
+                
+                # ¬Yi−1 ∧ Xi−1 ∧ Xi ⇒ Yi+1 = ¬Xi+1
+                cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), -getP(i, bit), getP(j, bit+1), getP(i, bit+1)])       # so far so good
+                cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), -getP(i, bit), -getP(j, bit+1), -getP(i, bit+1)])     # so far so good
+                
+                # otherwise: Yi-1 -> Yi = Xi
+                cnf.append([-getH(i, j), -getP(j, bit-1), -getP(i, bit), getP(j, bit)])
+                cnf.append([-getH(i, j), -getP(j, bit-1), getP(i, bit), -getP(j, bit)])
+                
+                # otherwise: -Xi-1 -> Yi = Xi
+                cnf.append([-getH(i, j), getP(i, bit-1), -getP(i, bit), getP(j, bit)])
+                cnf.append([-getH(i, j), getP(i, bit-1), getP(i, bit), -getP(j, bit)])
+                
+                #special: -Xi -> Yi+1 = Xi+1
+                cnf.append([-getH(i, j), getP(i, bit), getP(j, bit+1), -getP(i, bit+1)])
+                cnf.append([-getH(i, j), getP(i, bit), -getP(j, bit+1), getP(i, bit+1)])
+                
+                #special: Yi -> Yi+1 = Xi+1
+                cnf.append([-getH(i, j), -getP(j, bit), getP(j, bit+1), -getP(i, bit+1)])
+                cnf.append([-getH(i, j), -getP(j, bit), -getP(j, bit+1), getP(i, bit+1)])
+            
+            # the last bit if remain using 1-bit incrementor
+            if m%2 == 1:
+                bit = m-5
+                #carry = 1, -Yi-1 ^ Xi-1 -> Yi = -Xi
+                cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), getP(j, bit), getP(i, bit)])
+                cnf.append([-getH(i, j), getP(j, bit-1), -getP(i, bit-1), -getP(j, bit), -getP(i, bit)])
+                # carry = 0, -Xi-1 -> Yi = Xi
+                cnf.append([-getH(i, j), getP(i, bit-1), getP(j, bit), -getP(i, bit)])
+                cnf.append([-getH(i, j), getP(i, bit-1), -getP(j, bit), getP(i, bit)])
+                # carry = 0, Yi-1 -> Yi = Xi
+                cnf.append([-getH(i, j), -getP(j, bit-1), getP(j, bit), -getP(i, bit)])
+                cnf.append([-getH(i, j), -getP(j, bit-1), -getP(j, bit), getP(i, bit)])
+                
+            # top 4 bits 
+            bit = m
+            cnf.append([-getH(i, j), getP(i, bit-1), getP(i, bit-4), -getP(j, bit-1)])                                  #1
+            cnf.append([-getH(i, j), getP(i, bit-1), -getP(j, bit-1), -getP(j, bit-2)])                                 #2
+            cnf.append([-getH(i, j), getP(i, bit-1), -getP(j, bit-1), -getP(j, bit-3)])                                 #3
+            cnf.append([-getH(i, j), getP(i, bit-1), -getP(j, bit-1), -getP(j, bit-4)])                                 #4
+            cnf.append([-getH(i, j), getP(i, bit-3), -getP(j, bit-3), -getP(j, bit-4)])                                 #5
+            cnf.append([-getH(i, j), -getP(i, bit-4), -getP(j, bit-5), getP(j, bit-4)])                                 #6
+            cnf.append([-getH(i, j), getP(i, bit-2), -getP(i, bit-3), getP(j, bit-2), getP(j, bit-3)])                  #7
+            cnf.append([-getH(i, j), getP(i, bit-4), getP(i, bit-5), -getP(j, bit-4)])                                  #8
+            cnf.append([-getH(i, j), -getP(i, bit-1), getP(j, bit-1)])                                                  #9
+            cnf.append([-getH(i, j), -getP(i, bit-2), -getP(i, bit-3), -getP(j, bit-2), getP(j, bit-3)])                #10
+            cnf.append([-getH(i, j), -getP(i, bit-3), -getP(i, bit-4), -getP(i, bit-5), getP(j, bit-5), -getP(j, bit-3)]) #11
+            cnf.append([-getH(i, j), getP(i, bit-2), getP(i, bit-4), -getP(j, bit-2)])                                  #12
+            cnf.append([-getH(i, j), getP(i, bit-3), getP(i, bit-4), -getP(j, bit-3)])                                  #13
+            cnf.append([-getH(i, j), getP(i, bit-2), -getP(j, bit-2), -getP(j, bit-3)])                                 #14
+            cnf.append([-getH(i, j), getP(i, bit-2), -getP(j, bit-2), -getP(j, bit-4)])                                 #15
+            cnf.append([-getH(i, j), -getP(i, bit-4), getP(i, bit-5), getP(j, bit-4)])                                  #16
+            cnf.append([-getH(i, j), getP(i, bit-1), -getP(i, bit-2), getP(j, bit-1), getP(j, bit-2)])                  #17
+            cnf.append([-getH(i, j), getP(i, bit-4), -getP(i, bit-5), getP(j, bit-5), getP(j, bit-4)])                  #18
+            cnf.append([-getH(i, j), getP(i, bit-4), -getP(j, bit-5), -getP(j, bit-4)])                                 #19
+            cnf.append([-getH(i, j), -getP(i, bit-1), -getP(i, bit-2), -getP(j, bit-1), getP(j, bit-2)])                #20
+            cnf.append([-getH(i, j), getP(i, bit-3), -getP(i, bit-4), -getP(i, bit-5), getP(j, bit-5), getP(j, bit-3)]) #21
+            
+
 def binaryAdder(graph, AMO_method):
     n = graph.V
     set_AMO_encoding(AMO_method)
@@ -177,20 +331,19 @@ def binaryAdder(graph, AMO_method):
     vertex_incoming_arcs(cnf, n)
     vertex_start(cnf, n, m)
     vertex_end(cnf, n, m)
-    vertex_positions_v3(cnf, n, m)
+    vertex_positions_final(cnf, n, m)
     
     return cnf
 
 if __name__ == '__main__':
     
-    graph = init_graph_from_file("graphs/v_set/v-120-5.txt")
+    graph = init_graph_from_file("graphs/benmark_set/SH_125.hcp")
     
     print("Loading clauses...")
     HCPcnf = binaryAdder(graph, "AMO_binomial")
     
     sol = solve(HCPcnf)
     
-    print_result(sol["model"], graph.V, getH)
+    print_result(sol["model"], graph.V, getH, sol)
     print("Clauses:", sol["nofClauses"])
     print("Variables:", sol["nofVariables"])
-    

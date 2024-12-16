@@ -2,7 +2,7 @@
 # and write in file
 import random
 
-N = 900
+N = 78
 # estimate number of edges of each vertex
 E = 5
 url = f"v-{N}-{E}.txt"

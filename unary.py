@@ -81,18 +81,21 @@ def unary(graph, AMO_method):
     vertex_end(cnf, n)
     vertex_positions(cnf, n)
     vertex_EO_positions(cnf, n)
-    
+
     return cnf
 
 if __name__ == '__main__':
 
-    graph = init_graph_from_file("graphs/hc_set/hc-7.col")
+    graph = init_graph_from_file("graphs/v_set/v-15-3.txt")
     
     print("Loading clauses...")
     HCPcnf = unary(graph, "AMO_binomial")
     
     sol = solve(HCPcnf)
     
-    print_result(sol["model"], graph.V, getH)
+    print_result(sol["model"], graph.V, getH, sol)
     print("Clauses:", sol["nofClauses"])
     print("Variables:", sol["nofVariables"])
+    
+    
+    
