@@ -1,4 +1,5 @@
-import time
+import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from common import *
 
@@ -88,7 +89,6 @@ def vertex_positions(cnf, n, m):
                     # carry = 0, Yi-1 -> Yi = Xi
                     cnf.append([-getH(i, j), -getP(j, bit-1), getP(j, bit), -getP(i, bit)])
                     cnf.append([-getH(i, j), -getP(j, bit-1), -getP(j, bit), getP(i, bit)])
-
 
 def vertex_positions_v2(cnf, n, m):     # version 2 - two-bit incrementor using 14 clauses
     for i in range(2, n+1):
@@ -192,7 +192,6 @@ def vertex_positions_v2_2(cnf, n, m):     # version 2 - two-bit incrementor tryi
                 cnf.append([-getH(i, j), -getP(j, bit-1), getP(j, bit), -getP(i, bit)])
                 cnf.append([-getH(i, j), -getP(j, bit-1), -getP(j, bit), getP(i, bit)])
          
-                
 def vertex_positions_v3(cnf, n, m):     # version 3 - four-bit incrementor
     for i in range(2, n+1):
         for j in range(2, n+1):
@@ -240,7 +239,8 @@ def vertex_positions_v3(cnf, n, m):     # version 3 - four-bit incrementor
             cnf.append([-getH(i, j), -getP(i, bit-1), -getP(i, bit-2), -getP(j, bit-1), getP(j, bit-2)])                #20
             cnf.append([-getH(i, j), getP(i, bit-3), -getP(i, bit-4), -getP(i, bit-5), getP(j, bit-5), getP(j, bit-3)]) #21
             
-def vertex_positions_final(cnf, n, m):     # version final - 2 and 4-bit incrementor
+# version final - 2 bit and top 4 bit incrementor - only use for graph more than 32 vertex
+def vertex_positions_final(cnf, n, m):
     for i in range(2, n+1):
         for j in range(2, n+1):
             # bit == 0: # y0 = -x0
@@ -337,7 +337,7 @@ def binaryAdder(graph, AMO_method):
 
 if __name__ == '__main__':
     
-    graph = init_graph_from_file("graphs/benmark_set/SH_125.hcp")
+    graph = init_graph_from_file("../graphs/v_set/v-50-5.txt")
     
     print("Loading clauses...")
     HCPcnf = binaryAdder(graph, "AMO_binomial")

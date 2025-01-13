@@ -1,7 +1,8 @@
-from pysat.solvers import Glucose3
-import time
+import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from common import *
+from pysat.solvers import Glucose3
 
 # function to get variable for H and U
 def getH(i, j):
@@ -86,7 +87,7 @@ def unary(graph, AMO_method):
 
 if __name__ == '__main__':
 
-    graph = init_graph_from_file("graphs/v_set/v-15-3.txt")
+    graph = init_graph_from_file("../graphs/v_set/v-99-7.txt")
     
     print("Loading clauses...")
     HCPcnf = unary(graph, "AMO_binomial")

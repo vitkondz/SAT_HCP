@@ -9,3 +9,5 @@ id_rsa.pub
 export.py
 log-file.txt
 output.xlsx
+nsc_bintree.py
+venv39/

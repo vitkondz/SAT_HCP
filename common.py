@@ -2,8 +2,10 @@
 
 import math
 import time
-from pysat.solvers import Glucose3, Solver
+from pysat.solvers import Glucose3, Solver, Cadical195
 from threading import Timer
+from pypblib import pblib
+from pypblib.pblib import PBConfig, Pb2cnf, WeightedLit
 
 ########################################################################################
 # Common variable
@@ -54,7 +56,88 @@ def exactly_one(cnf, literals):
 
 # exactly one vertion pbLib
 # def exactly_one(cnf, literals):
+#     global varIndex
     
+#     pbConfig = PBConfig()
+#     pbConfig.set_AMK_Encoder(pblib.AMK_BDD)
+#     pb2 = Pb2cnf(pbConfig)
+#     formula = []
+    
+#     max_var = pb2.encode_at_least_k(literals, 1, formula, varIndex + 1)
+#     max_var = pb2.encode_at_most_k(literals, 1, formula, max_var + 1)
+#     # print(f"Formula: {formula}")
+#     for clause in formula:
+#         cnf.append(clause)
+#     varIndex = max_var
+#     return formula
+
+# exactly one version NSC
+# def exactly_one(cnf, literals):
+#     INF: int = 1_000_000_000
+#     k = 1 # for exactly one
+#     def find_sqrt(x: int) -> int:
+#         for i in range(1, x):
+#             if i * i >= x: return i
+#         return x
+
+#     n = len(literals) - 1
+#     map_register = [[INF for j in range(k + 1)] for i in range(n + 1)]
+    
+#     lim = find_sqrt(k)
+#     id_bonus = 0
+#     bonus = []
+#     cur = 0
+#     for i in range(1, n + 1):
+#         cur += 1
+#         for j in range(1, cur + 1):
+#             map_register[i][j] = new_var()
+
+#         # (1) If a bit is true, the first bit of the corresponding register is true
+#         cnf.append([-literals[i], map_register[i][1]])
+        
+#         # (5) If bit i is off, R[i][i] = 0;
+#         cnf.append([literals[i], -map_register[i][cur]])
+        
+#         if cur != 0:
+#             # (2) If R[i - 1][j] = 1, R[i][j] = 1;
+#             for j in range(1, cur):
+#                 cnf.append([-map_register[i - 1][j], map_register[i][j]])
+            
+#             # (3) If bit i is on and R[i - 1][j - 1] = 1, R[i][j] = 1;
+#             for j in range(2, cur + 1):
+#                 cnf.append([-literals[i], -map_register[i - 1][j - 1], map_register[i][j]])
+            
+#             # (4) If bit i is off and R[i - 1][j] = 0, R[i][j] = 0;
+#             for j in range(1, cur):
+#                 cnf.append([literals[i], map_register[i - 1][j], -map_register[i][j]])
+
+#             # (6) If R[i - 1][j - 1] = 0, R[i][j] = 0;
+#             for j in range(2, cur + 1):
+#                 cnf.append([map_register[i - 1][j - 1], -map_register[i][j]])
+
+#         if cur == lim or i == n:
+#             # add a bonus bar
+#             if id_bonus == 0: bonus.append(map_register[i])
+#             else:
+#                 a = map_register[i]
+#                 b = bonus[id_bonus - 1]
+
+#                 bonus.append([INF for _ in range(k + 1)])
+#                 for j in range(1, min(i, k) + 1):
+#                     bonus[id_bonus][j] = new_var()
+
+#                 for j in range(1, k + 1):
+#                     cnf.append([-a[j], bonus[id_bonus][j]])
+#                     cnf.append([-b[j], bonus[id_bonus][j]])
+#                 for j1 in range(1, k + 1):
+#                     for j2 in range(1, k + 1):
+#                         if j1 + j2 <= k: cnf.append([-a[j1], -b[j2], bonus[id_bonus][j1 + j2]])
+#                         else: cnf.append([-a[j1], -b[j2]])
+#                         if j1 + j2 - 1 <= k: cnf.append([a[j1], b[j2], -bonus[id_bonus][j1 + j2 - 1]])
+#             id_bonus += 1
+#             cur = 0
+
+#     cnf.append([bonus[id_bonus - 1][k]])
 
 
 # class Graph impliment by adjacency list
@@ -133,7 +216,8 @@ def solve(cnf):
         "vOfHC": None
     }
     
-    sat_solver = Glucose3(use_timer = True)
+    # sat_solver = Glucose3(use_timer = True)
+    sat_solver = Cadical195(use_timer = True)
     sat_solver.append_formula(cnf)
     
     result["nofClauses"] = sat_solver.nof_clauses()
@@ -145,7 +229,7 @@ def solve(cnf):
     timer.start()
     
     sat_status = sat_solver.solve_limited(expect_interrupt = True)
-    
+
     if sat_status is False:
         elapsed_time = float(format(sat_solver.time(), ".3f"))
         result["status"] = "UNSAT"
