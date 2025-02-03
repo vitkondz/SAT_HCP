@@ -20,17 +20,21 @@ def HCP_solver(filename, succesor_method, AMO_method):
     sat = solve(HCPcnf)
     
     print(sat["status"])
-    print("Time:", sat["time"])
+    print("Time solved:", sat["timeSolved"])
     print_result(sat["model"], graph.V, getH, sat)
     print("------------------------------------------------------")
     
     with open("log-file.txt", "a") as f:
-        f.write(f"{filename.ljust(15)}  {succesor_method.ljust(15)}  {AMO_method.ljust(30)} {str(sat['nofVariables']).ljust(10)} {str(sat['nofClauses']).ljust(10)} {sat['status'].ljust(10)}  {str(sat['time']).ljust(10)} {sat['vOfHC']}\n")
-        # f.write(f"{filename.ljust(25)}  {succesor_method.ljust(15)}  {AMO_method.ljust(30)} {str(sat["nofVariables"]).ljust(10)} {str(sat["nofClauses"]).ljust(10)} {sat['status'].ljust(10)}  {str(sat['time']).ljust(10)} {sat['vOfHC']}\n")
+        f.write(f"{filename.ljust(25)}  {succesor_method.ljust(15)}  {AMO_method.ljust(30)} {str(sat['nofVariables']).ljust(10)} {str(sat['nofClauses']).ljust(10)} {sat['status'].ljust(10)}  {str(sat['timeSolved']).ljust(10)} {sat['vOfHC']}\n")
+        # f.write(f"{filename.ljust(25)}  {succesor_method.ljust(15)}  {AMO_method.ljust(30)} {str(sat["nofVariables"]).ljust(10)} {str(sat["nofClauses"]).ljust(10)} {sat['status'].ljust(10)}  {str(sat['timeSolved']).ljust(10)} {sat['vOfHC']}\n")
         # f.write(f"{filename.ljust(25)}  {sat['vOfHC']}\n")
 
 if __name__ == '__main__':
     
+    # clear content in file log-file.txt
+    with open("log-file.txt", "w") as f:
+        f.write("")
+        
     for file in graphs:
         for successor in successorMethod:
             for AMO in AMOMethod:

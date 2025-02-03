@@ -11,8 +11,8 @@ successorMethod = [
 # Can choose more than one method, default is biomial
 AMOMethod = [
     # "AMO_binomial",
-    "AMO_binary",
-    # "AMO_sequential_encounter",
+    # "AMO_binary",
+    "AMO_sequential_encounter",
     # "AMO_commander",
     # "AMO_product"
 ]
@@ -32,9 +32,9 @@ graphs = [
     # "graphs/hc_set/hc-14.col",
     # "graphs/hc_set/hc-15.col",  # no solution
     
-    "graphs/v_set/v-10-3.txt",
-    "graphs/v_set/v-15-3.txt",
-    "graphs/v_set/v-30-4.txt",
+    # "graphs/v_set/v-10-3.txt",
+    # "graphs/v_set/v-15-3.txt",
+    # "graphs/v_set/v-30-4.txt",
     "graphs/v_set/v-39-3.txt",
     "graphs/v_set/v-50-5.txt",
     "graphs/v_set/v-65-3.txt",
@@ -44,15 +44,15 @@ graphs = [
     "graphs/v_set/v-100-2.txt",
     "graphs/v_set/v-100-5.txt",
     "graphs/v_set/v-120-5.txt",
-    # "graphs/v_set/v-123-5.txt",
-    # "graphs/v_set/v-123-7.txt",
-    # "graphs/v_set/v-133-5.txt",
-    # "graphs/v_set/v-133-7.txt",
-    # "graphs/v_set/v-151-7.txt",
-    # "graphs/v_set/v-163-5.txt",
-    # "graphs/v_set/v-163-7.txt",
-    # "graphs/v_set/v-200-3.txt",
-    # "graphs/v_set/v-200-5.txt",
+    "graphs/v_set/v-123-5.txt",
+    "graphs/v_set/v-123-7.txt",
+    "graphs/v_set/v-133-5.txt",
+    "graphs/v_set/v-133-7.txt",
+    "graphs/v_set/v-151-7.txt",
+    "graphs/v_set/v-163-5.txt",
+    "graphs/v_set/v-163-7.txt",
+    "graphs/v_set/v-200-3.txt",
+    "graphs/v_set/v-200-5.txt",
     "graphs/v_set/v-300-3.txt",
     "graphs/v_set/v-300-5.txt",
     "graphs/v_set/v-400-3.txt",

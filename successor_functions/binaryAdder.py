@@ -337,13 +337,13 @@ def binaryAdder(graph, AMO_method):
 
 if __name__ == '__main__':
     
-    graph = init_graph_from_file("../graphs/v_set/v-50-5.txt")
+    graph = init_graph_from_file("graphs/v_set/v-50-5.txt")
     
     print("Loading clauses...")
     HCPcnf = binaryAdder(graph, "AMO_binomial")
+    print(HCPcnf)
+    # sol = solve(HCPcnf)
     
-    sol = solve(HCPcnf)
-    
-    print_result(sol["model"], graph.V, getH, sol)
-    print("Clauses:", sol["nofClauses"])
-    print("Variables:", sol["nofVariables"])
+    # print_result(sol["model"], graph.V, getH, sol)
+    # print("Clauses:", sol["nofClauses"])
+    # print("Variables:", sol["nofVariables"])
