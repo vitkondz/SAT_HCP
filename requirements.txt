@@ -1,6 +1,3 @@
-numpy
-pandas
 python-sat
-pytz
 six
-tzdata
+pypblib # using python3.9 for pbplib
