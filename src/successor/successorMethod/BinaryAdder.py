@@ -25,28 +25,38 @@ class BinaryAdder(SuccessorMethod):
         distance_to_first = distance if not graph.is_directed else find_distance_to_first(graph.graph, 1)
         
         for vertex in range(2, n+1):
-            # Pi != t if the minimun distance from vertex i to vertex t is greater than t
+            # Pi != t if the minimum distance from vertex 1 to vertex i is greater than t
             for t in range(1, distance[vertex]+1):
                 binaryT = bin(t)[2:].zfill(m)[::-1]     # convert t to binary
-                exclude_clause = []
-                for bit in range(m):
-                    if binaryT[bit] == '1':
-                        exclude_clause.append(-self.getP(vertex, bit))
-                    else:
-                        exclude_clause.append(self.getP(vertex, bit))
-                cnf.append(exclude_clause)
+                cnf.append([-self.getP(vertex, bit) if binaryT[bit] == '1' else self.getP(vertex, bit) for bit in range(m)])
             
-            # Pi != t if the minimun distance from vertex i to vertex 1 is greater than n-t
+            # Pi != t if the minimum distance from vertex i to vertex 1 is greater than n-t
             for t in range(n-distance_to_first[vertex]+2, n+1):
                 binaryT = bin(t)[2:].zfill(m)[::-1]
-                exclude_clause = []
-                for bit in range(m):
-                    if binaryT[bit] == '1':
-                        exclude_clause.append(-self.getP(vertex, bit))
-                    else:
-                        exclude_clause.append(self.getP(vertex, bit))
-                cnf.append(exclude_clause)
+                cnf.append([-self.getP(vertex, bit) if binaryT[bit] == '1' else self.getP(vertex, bit) for bit in range(m)])
         
+    def preprocessing_v2(self, cnf, graph, m):
+        n = graph.v
+        distance = find_distance(graph.graph, 1)
+        distance_to_first = distance if not graph.is_directed else find_distance_to_first(graph.graph, 1)
+        
+        for vertex in range(2, n+1):
+            # Pi >= t+1 if the minimum distance from vertex 1 to vertex i is t
+            d_v = distance[vertex]
+            binaryD = bin(d_v + 1)[2:].zfill(m)[::-1]     # convert d to binary
+            for bit in range(m):
+                if binaryD[bit] == '1':
+                    cnf.append([self.getP(vertex, bit)] + 
+                               [self.getP(vertex, i) if binaryD[i] == '0' else -self.getP(vertex, i) for i in range(bit+1, m)])
+                        
+            # Pi <= n-t+1 if the minimun distance from vertex i to vertex 1 is t
+            d_v_to_first = distance_to_first[vertex]
+            binaryD = bin(n - d_v_to_first + 1)[2:].zfill(m)[::-1]
+            for bit in range(m):
+                if binaryD[bit] == '0':
+                    cnf.append([-self.getP(vertex, bit)] +
+                               [self.getP(vertex, i) if binaryD[i] == '0' else -self.getP(vertex, i) for i in range(bit+1, m)])
+            
         
     # add variables with default value to the cnf
     def add_default_variables(self, cnf, n, m, graph):
@@ -178,7 +188,7 @@ class BinaryAdder(SuccessorMethod):
         m = math.ceil(math.log2(n)) if math.log2(n) != int(math.log2(n)) else int(math.log2(n)) + 1
         
         if self.is_preprocessing:
-            self.preprocessing(cnf, graph, m)
+            self.preprocessing_v2(cnf, graph, m)
             
         self.add_default_variables(cnf, n, m, graph)
         self.vertex_outgoing_arcs(cnf, n)
