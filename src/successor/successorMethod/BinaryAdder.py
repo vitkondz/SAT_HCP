@@ -98,6 +98,14 @@ class BinaryAdder(SuccessorMethod):
                 literals.append(self.getH(i, j))
             self.exactly_one_constraint(cnf, literals)
             
+    def symmetry_breaking(self, cnf, graph, n):
+        start_v = graph.start_vertex
+        for i in range(1, n + 1):
+            clause = [-self.getH(i, start_v)]
+            for j in range(1, i):
+                clause.append(self.getH(start_v, j))
+            cnf.append(clause)
+    
     # H1i -> Pi = 2 (00..10) - constraints (3")
     def vertex_start(self, cnf, n, m, graph):
         start_v = graph.start_vertex
@@ -213,6 +221,10 @@ class BinaryAdder(SuccessorMethod):
         self.add_default_variables(cnf, n, m, graph)
         self.vertex_outgoing_arcs(cnf, n)
         self.vertex_incoming_arcs(cnf, n)
+        
+        if not graph.is_directed:
+            self.symmetry_breaking(cnf, graph, n)
+        
         self.vertex_start(cnf, n, m, graph)
         self.vertex_end(cnf, n, m, graph)
         self.vertex_positions_final(cnf, n, m, graph) # for final version
