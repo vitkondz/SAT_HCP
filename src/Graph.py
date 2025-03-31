@@ -3,6 +3,7 @@ class Graph:
         self.v = None
         self.graph = None
         self.is_directed = False
+        self.start_vertex = 1   # default start vertex
         
     def add_edge(self, u, v):
         self.graph[u].append(v)
@@ -12,6 +13,9 @@ class Graph:
         
     def set_is_directed(self, is_directed):
         self.is_directed = is_directed
+        
+    def set_start_vertex(self, start_vertex):
+        self.start_vertex = start_vertex
         
     def load_graph_from_file(self, url):
         test_set = url.split('/')[-2]
@@ -34,7 +38,7 @@ class Graph:
             self.v = len(graph)
             self.is_directed = True
         
-        if test_set == 'fhcpcs':
+        if test_set in ['fhcpcs', 'fhcpsl', 'fhcppp']:
             graph = {}
             with open(url) as f:
                 for line in f:
@@ -51,6 +55,8 @@ class Graph:
                                 graph[v].append(u)
             self.graph = graph
             self.v = len(graph)
+            # set the first vertex with the minimum degree
+            self.start_vertex = min(graph, key=lambda vertex: len(graph[vertex]))
             
         if test_set == 'tsphcp':
             graph = {}
@@ -66,23 +72,4 @@ class Graph:
                                 graph[u].append(v)  
             self.graph = graph
             self.v = len(graph)
-            
-        if test_set == 'fhcpsl':
-            graph = {}
-            with open(url) as f:
-                for line in f:
-                    if line.startswith("DIMENSION"):
-                        n = int(line.split(':')[1])
-                        graph = {i: [] for i in range(1, n+1)}
-                    else:
-                        # if line start with number differ -1
-                        if line[0].isdigit():
-                            u, v = map(int, line.split())
-                            if v not in graph[u]:
-                                graph[u].append(v)
-                            if u not in graph[v]:
-                                graph[v].append(u)
-            self.graph = graph
-            self.v = len(graph)
-            
-        
+            self.start_vertex = min(graph, key=lambda vertex: len(graph[vertex]))

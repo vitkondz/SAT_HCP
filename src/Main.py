@@ -28,8 +28,8 @@ for path in listFiles:
     print("Start build clauses for: ", path.split("/")[-1])
     cnf = hcpSolver.successor.build_clauses(cnf, graph)
     result = hcpSolver.solve(cnf)
-    hcpSolver.print_result(result["model"], graph, hcpSolver.successor.getH, result)
     print(result["status"])
+    hcpSolver.print_result(result["model"], graph, hcpSolver.successor.getH, result)
     
     with open("log-file.txt", "a") as f:
         filename = path.split("/")[-1]
