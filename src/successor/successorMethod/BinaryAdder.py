@@ -21,32 +21,50 @@ class BinaryAdder(SuccessorMethod):
     
     def preprocessing(self, cnf, graph, m):
         n = graph.v
-        distance = find_distance(graph.graph, 1)
-        distance_to_first = distance if not graph.is_directed else find_distance_to_first(graph.graph, 1)
+        start_v = graph.start_vertex
+        distance = find_distance(graph.graph, start_v)
+        distance_to_first = distance if not graph.is_directed else find_distance_to_first(graph.graph, start_v)
         
-        for vertex in range(2, n+1):
-            # Pi != t if the minimun distance from vertex i to vertex t is greater than t
+        for vertex in range(1, n+1):
+            if vertex == start_v:
+                continue
+            
+            # Pi != t if the minimum distance from vertex 1 to vertex i is greater than t
             for t in range(1, distance[vertex]+1):
                 binaryT = bin(t)[2:].zfill(m)[::-1]     # convert t to binary
-                exclude_clause = []
-                for bit in range(m):
-                    if binaryT[bit] == '1':
-                        exclude_clause.append(-self.getP(vertex, bit))
-                    else:
-                        exclude_clause.append(self.getP(vertex, bit))
-                cnf.append(exclude_clause)
+                cnf.append([-self.getP(vertex, bit) if binaryT[bit] == '1' else self.getP(vertex, bit) for bit in range(m)])
             
-            # Pi != t if the minimun distance from vertex i to vertex 1 is greater than n-t
+            # Pi != t if the minimum distance from vertex i to vertex 1 is greater than n-t
             for t in range(n-distance_to_first[vertex]+2, n+1):
                 binaryT = bin(t)[2:].zfill(m)[::-1]
-                exclude_clause = []
-                for bit in range(m):
-                    if binaryT[bit] == '1':
-                        exclude_clause.append(-self.getP(vertex, bit))
-                    else:
-                        exclude_clause.append(self.getP(vertex, bit))
-                cnf.append(exclude_clause)
+                cnf.append([-self.getP(vertex, bit) if binaryT[bit] == '1' else self.getP(vertex, bit) for bit in range(m)])
         
+    def preprocessing_v2(self, cnf, graph, m):
+        n = graph.v
+        start_v = graph.start_vertex
+        distance = find_distance(graph.graph, start_v)
+        distance_to_first = distance if not graph.is_directed else find_distance_to_first(graph.graph, start_v)
+        
+        for vertex in range(1, n+1):
+            if vertex == start_v:
+                continue
+            
+            # Pi >= t+1 if the minimum distance from vertex 1 to vertex i is t
+            d_v = distance[vertex]
+            binaryD = bin(d_v + 1)[2:].zfill(m)[::-1]     # convert d to binary
+            for bit in range(m):
+                if binaryD[bit] == '1':
+                    cnf.append([self.getP(vertex, bit)] + 
+                               [self.getP(vertex, i) if binaryD[i] == '0' else -self.getP(vertex, i) for i in range(bit+1, m)])
+                        
+            # Pi <= n-t+1 if the minimun distance from vertex i to vertex 1 is t
+            d_v_to_first = distance_to_first[vertex]
+            binaryD = bin(n - d_v_to_first + 1)[2:].zfill(m)[::-1]
+            for bit in range(m):
+                if binaryD[bit] == '0':
+                    cnf.append([-self.getP(vertex, bit)] +
+                               [self.getP(vertex, i) if binaryD[i] == '0' else -self.getP(vertex, i) for i in range(bit+1, m)])
+            
         
     # add variables with default value to the cnf
     def add_default_variables(self, cnf, n, m, graph):
@@ -55,12 +73,14 @@ class BinaryAdder(SuccessorMethod):
             for j in range(1, n+1):
                 if j not in graph.graph[i]:
                     cnf.append([-self.getH(i, j)])
-        # P1 = 1 (00..01)
+        
+        # P_start = 1 (00..01)            
+        start_v = graph.start_vertex
         for bit in range(m):
             if bit == 0:
-                cnf.append([self.getP(1, bit)])
+                cnf.append([self.getP(start_v, bit)])
             else:
-                cnf.append([-self.getP(1, bit)])  
+                cnf.append([-self.getP(start_v, bit)])  
     
     # each vertex has exactly one outgoing arc - constraints (1)
     def vertex_outgoing_arcs(self, cnf, n):
@@ -78,29 +98,47 @@ class BinaryAdder(SuccessorMethod):
                 literals.append(self.getH(i, j))
             self.exactly_one_constraint(cnf, literals)
             
+    def symmetry_breaking(self, cnf, graph, n):
+        start_v = graph.start_vertex
+        for i in range(1, n + 1):
+            clause = [-self.getH(i, start_v)]
+            for j in range(1, i):
+                clause.append(self.getH(start_v, j))
+            cnf.append(clause)
+    
     # H1i -> Pi = 2 (00..10) - constraints (3")
-    def vertex_start(self, cnf, n, m):
-        for i in range(2, n+1):
+    def vertex_start(self, cnf, n, m, graph):
+        start_v = graph.start_vertex
+        for i in range(1, n+1):
+            if i == start_v:
+                continue
             for bit in range(m):
                 if bit == 1: 
-                    cnf.append([-self.getH(1, i), self.getP(i, bit)])
+                    cnf.append([-self.getH(start_v, i), self.getP(i, bit)])
                 else:
-                    cnf.append([-self.getH(1, i), -self.getP(i, bit)])
+                    cnf.append([-self.getH(start_v, i), -self.getP(i, bit)])
                     
     # Hi1 -> Pi = n - constraints (4")
-    def vertex_end(self, cnf, n, m):
+    def vertex_end(self, cnf, n, m, graph):
+        start_v = graph.start_vertex
         binaryN = bin(n)[2:][::-1]
-        for i in range(2, n+1):
+        for i in range(1, n+1):
+            if i == start_v:
+                continue
             for bit in range(m):
                 if binaryN[bit] == '1':
-                    cnf.append([-self.getH(i, 1), self.getP(i, bit)])
+                    cnf.append([-self.getH(i, start_v), self.getP(i, bit)])
                 else:
-                    cnf.append([-self.getH(i, 1), -self.getP(i, bit)])
+                    cnf.append([-self.getH(i, start_v), -self.getP(i, bit)])
          
-     # version final - 2 bit and top 4 bit incrementor - only use for graph more than 32 vertex
-    def vertex_positions_final(self, cnf, n, m):
-        for i in range(2, n+1):
-            for j in range(2, n+1):
+    # version final - 2 bit and top 4 bit incrementor - only use for graph more than 32 vertex
+    def vertex_positions_final(self, cnf, n, m, graph):
+        start_v = graph.start_vertex
+        for i in range(1, n+1):
+            for j in range(1, n+1):
+                if i == start_v or j == start_v or i == j:
+                    continue
+                
                 # bit == 0: # y0 = -x0
                 cnf.append([-self.getH(i, j), self.getP(i, 0), self.getP(j, 0)])
                 cnf.append([-self.getH(i, j), -self.getP(i, 0), -self.getP(j, 0)])
@@ -178,13 +216,17 @@ class BinaryAdder(SuccessorMethod):
         m = math.ceil(math.log2(n)) if math.log2(n) != int(math.log2(n)) else int(math.log2(n)) + 1
         
         if self.is_preprocessing:
-            self.preprocessing(cnf, graph, m)
+            self.preprocessing_v2(cnf, graph, m)
             
         self.add_default_variables(cnf, n, m, graph)
         self.vertex_outgoing_arcs(cnf, n)
         self.vertex_incoming_arcs(cnf, n)
-        self.vertex_start(cnf, n, m)
-        self.vertex_end(cnf, n, m)
-        self.vertex_positions_final(cnf, n, m) # for final version
+        
+        if not graph.is_directed:
+            self.symmetry_breaking(cnf, graph, n)
+        
+        self.vertex_start(cnf, n, m, graph)
+        self.vertex_end(cnf, n, m, graph)
+        self.vertex_positions_final(cnf, n, m, graph) # for final version
 
         return cnf

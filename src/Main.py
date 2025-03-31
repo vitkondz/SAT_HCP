@@ -28,10 +28,11 @@ for path in listFiles:
     print("Start build clauses for: ", path.split("/")[-1])
     cnf = hcpSolver.successor.build_clauses(cnf, graph)
     result = hcpSolver.solve(cnf)
-    hcpSolver.print_result(result["model"], graph, hcpSolver.successor.getH, result)
     print(result["status"])
+    hcpSolver.print_result(result["model"], graph, hcpSolver.successor.getH, result)
     
     with open("log-file.txt", "a") as f:
         filename = path.split("/")[-1]
-        f.write(f"{filename.ljust(30)} {str(result['nofVariables']).ljust(10)} {str(result['nofClauses']).ljust(10)} {result['status'].ljust(10)}  {str(result['time']).ljust(10)} {result['vOfHC']}\n")
+        status = "valid" if result['vOfHC'] == graph.v else "None"
+        f.write(f"{filename.ljust(30)} {str(result['nofVariables']).ljust(10)} {str(result['nofClauses']).ljust(10)} {result['status'].ljust(10)}  {str(result['time']).ljust(10)} {status.ljust(10)}\n")
 
