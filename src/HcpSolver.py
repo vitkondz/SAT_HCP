@@ -1,6 +1,5 @@
 from VariableManager import VariableManager
-from pysat.solvers import Glucose3
-from pysat.solvers import Cadical195
+from pysat.solvers import Solver
 from Graph import Graph
 from threading import Timer
 from utils.common import interrupt
@@ -17,6 +16,7 @@ class HcpSolver:
         successor.set_var_manager(self.var_manager)
         exactly_one.set_var_manager(self.var_manager)
         
+        self.sat_solver = Solver(name = 'g4', use_timer = True)
         self.graph = Graph()
         self.result = None
         self.hcpCnf = []
@@ -34,8 +34,7 @@ class HcpSolver:
             "vOfHC": None
         }
         
-        sat_solver = Glucose3(use_timer = True)
-        # sat_solver = Cadical195(use_timer = True)
+        sat_solver = self.sat_solver
         sat_solver.append_formula(cnf)
         
         result["nofClauses"] = sat_solver.nof_clauses()
