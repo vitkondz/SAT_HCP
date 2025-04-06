@@ -28,7 +28,7 @@ for path in listFiles:
     cnf = hcpSolver.hcpCnf
     print("Start build clauses for: ", path.split("/")[-1])
     cnf = hcpSolver.successor.build_clauses(cnf, graph)
-    result = hcpSolver.solve(cnf)
+    result = hcpSolver.solve_cadical(cnf)
     print(result["status"])
     hcpSolver.print_result(result["model"], graph, hcpSolver.successor.getH, result)
     
