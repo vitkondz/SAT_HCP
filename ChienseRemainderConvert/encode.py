@@ -16,6 +16,7 @@ import sys
 
 from pysat.solvers import Glucose3, Cadical195
 from threading import Timer
+import time
 
 TIME_BUDGET = 120
 
@@ -567,6 +568,7 @@ def main(argv):
         "status": None,
         "model": None,
         "time": None,
+        "time2": None,
     }
     
     
@@ -578,7 +580,9 @@ def main(argv):
     timer.start()
     
     print("Starting solve... Cycle = ", cycle)
+    start_time = time.time()
     status = sat_solver.solve_limited(expect_interrupt=True)
+    elapsed_time_2 = float(format(time.time() - start_time, ".3f"))
     
     solution = None
     if status is False:
@@ -586,6 +590,7 @@ def main(argv):
         print("UNSAT")
         result["time"] = elapsed_time
         result["status"] = 'UNSAT'
+        result["time2"] = elapsed_time_2
         print("Time: ", elapsed_time)
     else:
         solution = sat_solver.get_model()
@@ -598,6 +603,7 @@ def main(argv):
             result["model"] = solution
             print("SAT")
             result["time"] = elapsed_time
+            result["time2"] = elapsed_time_2
             result["status"] = "SAT"
             print("Time: ", elapsed_time)
     
@@ -617,7 +623,7 @@ def main(argv):
     
     with open('logfile.txt', 'a') as logfile:
         filename = argv[1].split('/')[-1]
-        logfile.write(f"{filename.ljust(15)} {str(cycle).ljust(10)} {str(result['status']).ljust(10)} {str(result['time']).ljust(10)} {str(isHC)} \n")
+        logfile.write(f"{filename.ljust(15)} {str(cycle).ljust(10)} {str(result['status']).ljust(10)} {str(result['time']).ljust(10)} {str(result['time2']).ljust(10)} {str(isHC)} \n")
         
         
     # ------------------------------------------------------------
@@ -706,12 +712,54 @@ if __name__ == "__main__":
     
     argvs = [
         # ['encode', 'graphs/graph0.edge', 6],
+        ['encode', 'graphs/graph48.edge', 2],
+        ['encode', 'graphs/graph48.edge', 6],
+        ['encode', 'graphs/graph48.edge', 12],
+        ['encode', 'graphs/graph48.edge', 60],
+        ['encode', 'graphs/graph48.edge', 105],
+        ['encode', 'graphs/graph48.edge', 420],
+        ['encode', 'graphs/graph162.edge', 2],
+        ['encode', 'graphs/graph162.edge', 6],
+        ['encode', 'graphs/graph162.edge', 12],
+        ['encode', 'graphs/graph162.edge', 60],
+        ['encode', 'graphs/graph162.edge', 105],
+        ['encode', 'graphs/graph162.edge', 420],
         ['encode', 'graphs/graph171.edge', 2],
         ['encode', 'graphs/graph171.edge', 6],
         ['encode', 'graphs/graph171.edge', 12],
         ['encode', 'graphs/graph171.edge', 60],
         ['encode', 'graphs/graph171.edge', 105],
         ['encode', 'graphs/graph171.edge', 420],
+        ['encode', 'graphs/graph197.edge', 2],
+        ['encode', 'graphs/graph197.edge', 6],
+        ['encode', 'graphs/graph197.edge', 12],
+        ['encode', 'graphs/graph197.edge', 60],
+        ['encode', 'graphs/graph197.edge', 105],
+        ['encode', 'graphs/graph197.edge', 420],
+        ['encode', 'graphs/graph223.edge', 2],
+        ['encode', 'graphs/graph223.edge', 6],
+        ['encode', 'graphs/graph223.edge', 12],
+        ['encode', 'graphs/graph223.edge', 60],
+        ['encode', 'graphs/graph223.edge', 105],
+        ['encode', 'graphs/graph223.edge', 420],
+        ['encode', 'graphs/graph237.edge', 2],
+        ['encode', 'graphs/graph237.edge', 6],
+        ['encode', 'graphs/graph237.edge', 12],
+        ['encode', 'graphs/graph237.edge', 60],
+        ['encode', 'graphs/graph237.edge', 105],
+        ['encode', 'graphs/graph237.edge', 420],
+        ['encode', 'graphs/graph249.edge', 2],
+        ['encode', 'graphs/graph249.edge', 6],
+        ['encode', 'graphs/graph249.edge', 12],
+        ['encode', 'graphs/graph249.edge', 60],
+        ['encode', 'graphs/graph249.edge', 105],
+        ['encode', 'graphs/graph249.edge', 420],
+        ['encode', 'graphs/graph252.edge', 2],
+        ['encode', 'graphs/graph252.edge', 6],
+        ['encode', 'graphs/graph252.edge', 12],
+        ['encode', 'graphs/graph252.edge', 60],
+        ['encode', 'graphs/graph252.edge', 105],
+        ['encode', 'graphs/graph252.edge', 420],
         ['encode', 'graphs/graph254.edge', 2],
         ['encode', 'graphs/graph254.edge', 6],
         ['encode', 'graphs/graph254.edge', 12],
