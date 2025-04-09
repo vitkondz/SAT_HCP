@@ -3,6 +3,7 @@ from pysat.solvers import Solver
 from Graph import Graph
 from threading import Timer
 from utils.common import interrupt
+import os
 
 TIME_BUDGET = 600
 
@@ -62,6 +63,69 @@ class HcpSolver:
                 
         timer.cancel()
         sat_solver.delete()
+        return result
+    
+    def solve_cadical(self, cnf):
+        
+        def write_to_input():
+            # Write data to the file
+            with open(input_file, 'w') as writer:
+                # Write each clause to the file
+                for clause in cnf:
+                    for literal in clause: writer.write(str(literal) + " ")
+                    writer.write("\n")
+            cnf.clear()
+            print(f"Input written to {input_file}.\n")
+            
+        def handle_output():
+            result_text = "TIMEOUT"
+            time_run = TIME_BUDGET
+            solution = []
+
+            try:
+                with open(output_file, 'r') as file:
+                    lines = file.readlines()
+            except FileNotFoundError:
+                print(f"Output file '{output_file}' not found.")
+                result["status"] = "TIMEOUT"
+                result["time"] = TIME_BUDGET
+                return
+            if lines[0] != "-1\n":
+                time_run = float(lines[1])
+                print(f"Time run: {time_run}s.")
+                if lines[0] == "0\n": result_text = "UNSAT"
+                else:
+                    result_text = "SAT"
+                    solution = list(map(int, lines[2].split()))
+            
+            result["model"] = solution
+            result["status"] = result_text
+            result["time"] = time_run
+            
+            # Delete the output file after handling
+            os.remove(output_file)
+            
+        result = {
+            "nofVariables": None,
+            "nofClauses": None,
+            "status": None,
+            "model": None,
+            "time": None,
+            "vOfHC": None
+        }
+        
+        result["nofClauses"] = len(cnf)
+        result["nofVariables"] = self.var_manager.get_var()
+        
+        input_file = 'src/utils/all_cadical/input.txt'
+        output_file = 'src/utils/all_cadical/output.txt'
+        
+        write_to_input()
+        print("Running SAT solver...")
+        bashCommand = f"./src/utils/all_cadical/runlim -r {TIME_BUDGET + 10} -o src/utils/all_cadical/report.txt python src/utils/all_cadical/cadical.py"
+        os.system(bashCommand)
+        
+        handle_output()
         return result
     
     def print_result(self, model, graph, getH, result):
