@@ -4,6 +4,7 @@ from Graph import Graph
 from threading import Timer
 from utils.common import interrupt
 import os
+import sys
 
 TIME_BUDGET = 600
 
@@ -122,7 +123,7 @@ class HcpSolver:
         
         write_to_input()
         print("Running SAT solver...")
-        bashCommand = f"./src/utils/all_cadical/runlim -r {TIME_BUDGET + 10} -o src/utils/all_cadical/report.txt python src/utils/all_cadical/cadical.py"
+        bashCommand = f"./src/utils/all_cadical/runlim -r {TIME_BUDGET + 10} -o src/utils/all_cadical/report.txt {sys.executable} src/utils/all_cadical/cadical.py"
         os.system(bashCommand)
         
         handle_output()

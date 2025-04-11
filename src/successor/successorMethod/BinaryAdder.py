@@ -38,6 +38,13 @@ class BinaryAdder(SuccessorMethod):
             for t in range(n-distance_to_first[vertex]+2, n+1):
                 binaryT = bin(t)[2:].zfill(m)[::-1]
                 cnf.append([-self.getP(vertex, bit) if binaryT[bit] == '1' else self.getP(vertex, bit) for bit in range(m)])
+
+        # If start vertex of undirected graph has exactly 2 neighbors, neighbor positions can't be 3, 4, ..., n-1
+        if len(graph.graph[start_v]) == 2 and not graph.is_directed:
+            for neighbor in graph.graph[start_v]:
+                for t in range(3, n):
+                    binaryT = bin(t)[2:].zfill(m)[::-1]
+                    cnf.append([-self.getP(neighbor, bit) if binaryT[bit] == '1' else self.getP(neighbor, bit) for bit in range(m)])             
         
     def preprocessing_v2(self, cnf, graph, m):
         n = graph.v
@@ -65,6 +72,53 @@ class BinaryAdder(SuccessorMethod):
                     cnf.append([-self.getP(vertex, bit)] +
                                [self.getP(vertex, i) if binaryD[i] == '0' else -self.getP(vertex, i) for i in range(bit+1, m)])
             
+        # If start vertex of undirected graph has exactly 2 neighbors, neighbor positions can't be 3, 4, ..., n-1
+        if len(graph.graph[start_v]) == 2 and not graph.is_directed:
+            # Get the two neighbors
+            neighbors = list(graph.graph[start_v])
+            n1, n2 = neighbors[0], neighbors[1]
+            
+            binary_two = bin(2)[2:].zfill(m)[::-1]
+            binary_n = bin(n)[2:].zfill(m)[::-1]
+            
+            # Encode that either:
+            # (n1 is at position 2 AND n2 is at position n) OR (n1 is at position n AND n2 is at position 2)
+            # (case1_n1 AND case1_n2) OR (case2_n1 AND case2_n2)
+            
+            # Case 1: n1 is at position 2
+            case1_n1 = []
+            for bit in range(m):
+                if binary_two[bit] == '1':
+                    case1_n1.append(self.getP(n1, bit))
+                else:
+                    case1_n1.append(-self.getP(n1, bit))
+            # Case 1: n2 is at position n
+            case1_n2 = []
+            for bit in range(m):
+                if binary_n[bit] == '1':
+                    case1_n2.append(self.getP(n2, bit))
+                else:
+                    case1_n2.append(-self.getP(n2, bit))
+            
+            # Case 2: n2 is at position 2
+            case2_n2 = []
+            for bit in range(m):
+                if binary_two[bit] == '1':
+                    case2_n2.append(self.getP(n2, bit))
+                else:
+                    case2_n2.append(-self.getP(n2, bit))
+            # Case 2: n1 is at position n
+            case2_n1 = []
+            for bit in range(m):
+                if binary_n[bit] == '1':
+                    case2_n1.append(self.getP(n1, bit))
+                else:
+                    case2_n1.append(-self.getP(n1, bit))
+        
+            cnf.append(case1_n1 + case2_n1)
+            cnf.append(case1_n1 + case2_n2)
+            cnf.append(case1_n2 + case2_n1)
+            cnf.append(case1_n2 + case2_n2)
         
     # add variables with default value to the cnf
     def add_default_variables(self, cnf, n, m, graph):
