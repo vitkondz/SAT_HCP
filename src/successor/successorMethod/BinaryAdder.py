@@ -271,13 +271,15 @@ class BinaryAdder(SuccessorMethod):
         
         if self.is_preprocessing:
             self.preprocessing_v2(cnf, graph, m)
+        else:
+            self.preprocessing(cnf, graph, m)
             
         self.add_default_variables(cnf, n, m, graph)
         self.vertex_outgoing_arcs(cnf, n)
         self.vertex_incoming_arcs(cnf, n)
         
-        if not graph.is_directed:
-            self.symmetry_breaking(cnf, graph, n)
+        # if not graph.is_directed:
+        #     self.symmetry_breaking(cnf, graph, n)
         
         self.vertex_start(cnf, n, m, graph)
         self.vertex_end(cnf, n, m, graph)
