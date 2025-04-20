@@ -1,60 +1,108 @@
-graph48.edge    2          SAT        0.047      0.047      Wrong 
-graph48.edge    6          SAT        6.856      6.856      Wrong 
-graph48.edge    12         SAT        13.751     13.751     Wrong 
-graph48.edge    60         SAT        25.371     25.376     Wrong 
-graph48.edge    105        SAT        53.19      53.192     Verified 
-graph48.edge    420        SAT        98.497     98.5       Verified 
-graph162.edge   2          SAT        37.401     37.402     Wrong 
-graph162.edge   6          SAT        18.165     18.166     Verified 
-graph162.edge   12         SAT        23.738     23.739     Verified 
-graph162.edge   60         SAT        39.938     39.939     Verified 
-graph162.edge   105        SAT        41.171     41.175     Verified 
-graph162.edge   420        SAT        44.95      44.952     Verified 
-graph171.edge   2          SAT        0.001      0.001      Wrong 
-graph171.edge   6          SAT        1.455      1.455      Wrong 
-graph171.edge   12         SAT        1.03       1.03       Verified 
-graph171.edge   60         SAT        3.989      3.989      Verified 
-graph171.edge   105        SAT        4.532      4.532      Verified 
-graph171.edge   420        SAT        6.781      6.782      Verified 
-graph197.edge   2          SAT        0.019      0.019      Wrong 
-graph197.edge   6          SAT        1.353      1.353      Wrong 
-graph197.edge   12         SAT        3.491      3.491      Verified 
-graph197.edge   60         SAT        10.847     10.847     Verified 
-graph197.edge   105        SAT        6.93       6.93       Verified 
-graph197.edge   420        SAT        14.221     14.222     Verified 
-graph223.edge   2          SAT        0.028      0.028      Wrong 
-graph223.edge   6          SAT        0.687      0.687      Wrong 
-graph223.edge   12         SAT        9.133      9.133      Wrong 
-graph223.edge   60         SAT        79.047     79.05      Verified 
-graph223.edge   105        SAT        8.273      8.274      Verified 
-graph223.edge   420        SAT        55.842     55.844     Verified 
-graph237.edge   2          SAT        0.016      0.016      Wrong 
-graph237.edge   6          SAT        0.821      0.821      Wrong 
-graph237.edge   12         SAT        11.058     11.058     Verified 
-graph237.edge   60         SAT        4.253      4.253      Verified 
-graph237.edge   105        SAT        4.819      4.82       Wrong 
-graph237.edge   420        SAT        18.195     18.198     Verified 
-graph249.edge   2          SAT        0.271      0.271      Wrong 
-graph249.edge   6          SAT        0.813      0.813      Verified 
-graph249.edge   12         SAT        5.328      5.328      Verified 
-graph249.edge   60         SAT        2.363      2.363      Verified 
-graph249.edge   105        SAT        2.612      2.612      Verified 
-graph249.edge   420        SAT        6.211      6.211      Verified 
-graph252.edge   2          SAT        0.025      0.025      Wrong 
-graph252.edge   6          SAT        6.895      6.896      Wrong 
-graph252.edge   12         SAT        11.979     11.979     Verified 
-graph252.edge   60         SAT        13.616     13.616     Verified 
-graph252.edge   105        SAT        69.745     69.746     Verified 
-graph252.edge   420        SAT        25.833     25.834     Verified 
-graph254.edge   2          SAT        0.102      0.102      Wrong 
-graph254.edge   6          SAT        0.876      0.876      Verified 
-graph254.edge   12         SAT        1.78       1.78       Verified 
-graph254.edge   60         SAT        2.217      2.217      Verified 
-graph254.edge   105        SAT        3.215      3.215      Verified 
-graph254.edge   420        SAT        4.628      4.628      Verified 
-graph255.edge   2          SAT        0.072      0.072      Wrong 
-graph255.edge   6          SAT        2.133      2.133      Wrong 
-graph255.edge   12         SAT        3.098      3.098      Wrong 
-graph255.edge   60         SAT        5.627      5.628      Wrong 
-graph255.edge   105        SAT        13.142     13.143     Wrong 
-graph255.edge   420        SAT        14.489     14.489     Verified 
+graph48.edge    2          SAT        2091       9038       0.045      Wrong 
+graph48.edge    6          SAT        2767       18674      6.184      Wrong 
+graph48.edge    12         SAT        3105       24871      12.216     Wrong 
+graph48.edge    60         SAT        4119       41042      22.664     Wrong 
+graph48.edge    105        SAT        4457       44481      47.606     Verified 
+graph48.edge    420        SAT        5133       53779      86.584     Verified 
+graph162.edge   2          SAT        824016     3296052    31.752     Wrong 
+graph162.edge   6          SAT        825834     5775807    15.611     Verified 
+graph162.edge   12         SAT        826743     7428370    20.0       Verified 
+graph162.edge   60         SAT        829470     11561597   34.124     Verified 
+graph162.edge   105        SAT        830379     12388789   36.306     Verified 
+graph162.edge   420        SAT        832197     14867635   38.721     Verified 
+graph171.edge   2          SAT        3987       13962      0.001      Wrong 
+graph171.edge   6          SAT        5979       32888      1.306      Wrong 
+graph171.edge   12         SAT        6975       44840      0.907      Verified 
+graph171.edge   60         SAT        9963       76714      3.534      Verified 
+graph171.edge   105        SAT        10959      83688      3.904      Verified 
+graph171.edge   420        SAT        12951      101618     5.796      Verified 
+graph197.edge   2          SAT        4755       16650      0.017      Wrong 
+graph197.edge   6          SAT        7131       39224      1.202      Wrong 
+graph197.edge   12         SAT        8319       53480      3.038      Verified 
+graph197.edge   60         SAT        11883      91498      9.661      Verified 
+graph197.edge   105        SAT        13071      99816      6.118      Verified 
+graph197.edge   420        SAT        15447      121202     12.624     Verified 
+graph223.edge   2          SAT        6595       23354      0.026      Wrong 
+graph223.edge   6          SAT        9367       51950      0.621      Wrong 
+graph223.edge   12         SAT        10753      70089      8.285      Wrong 
+graph223.edge   60         SAT        14911      118210     70.892     Verified 
+graph223.edge   105        SAT        16297      128667     7.339      Verified 
+graph223.edge   420        SAT        19069      155877     46.652     Verified 
+graph237.edge   2          SAT        5907       20682      0.016      Wrong 
+graph237.edge   6          SAT        8859       48728      0.745      Wrong 
+graph237.edge   12         SAT        10335      66440      9.643      Verified 
+graph237.edge   60         SAT        14763      113674     3.535      Verified 
+graph237.edge   105        SAT        16239      124008     4.033      Wrong 
+graph237.edge   420        SAT        19191      150578     15.517     Verified 
+graph249.edge   2          SAT        6235       21830      0.246      Wrong 
+graph249.edge   6          SAT        9351       51434      0.724      Verified 
+graph249.edge   12         SAT        10909      70130      4.661      Verified 
+graph249.edge   60         SAT        15583      119988     1.942      Verified 
+graph249.edge   105        SAT        17141      130896     2.106      Verified 
+graph249.edge   420        SAT        20257      158942     5.11       Verified 
+graph252.edge   2          SAT        6291       22026      0.023      Wrong 
+graph252.edge   6          SAT        9435       51896      6.037      Wrong 
+graph252.edge   12         SAT        11007      70760      10.285     Verified 
+graph252.edge   60         SAT        15723      121066     11.443     Verified 
+graph252.edge   105        SAT        17295      132072     61.006     Verified 
+graph252.edge   420        SAT        20439      160370     21.814     Verified 
+graph254.edge   2          SAT        6331       22166      0.093      Wrong 
+graph254.edge   6          SAT        9495       52226      0.785      Verified 
+graph254.edge   12         SAT        11077      71210      1.532      Verified 
+graph254.edge   60         SAT        15823      121836     1.846      Verified 
+graph254.edge   105        SAT        17405      132912     2.664      Verified 
+graph254.edge   420        SAT        20569      161390     3.777      Verified 
+graph255.edge   2          SAT        8383       30006      0.066      Wrong 
+graph255.edge   6          SAT        11551      65172      1.889      Wrong 
+graph255.edge   12         SAT        13135      87559      2.713      Wrong 
+graph255.edge   60         SAT        17887      146696     4.772      Wrong 
+graph255.edge   105        SAT        19471      159475     11.317     Wrong 
+graph255.edge   420        SAT        22639      193057     12.655     Verified 
+graph424.edge   2          SAT        11993      44214      5.665      Wrong 
+graph424.edge   6          SAT        16925      97554      188.241    Wrong 
+graph424.edge   12         SAT        19391      131469     198.983    Wrong 
+graph424.edge   60         SAT        26789      221190     184.586    Wrong 
+graph424.edge   105        SAT        29255      240615     785.964    Verified 
+graph424.edge   420        SAT        34187      291489     677.059    Verified 
+graph446.edge   2          SAT        12036      45260      8.415      Wrong 
+graph446.edge   6          SAT        17150      100227     136.445    Wrong 
+graph446.edge   12         SAT        19707      135166     156.696    Wrong 
+graph446.edge   60         SAT        27378      227629     299.416    Wrong 
+graph446.edge   105        SAT        29935      247657     745.635    Verified 
+graph446.edge   420        SAT        35049      300067     672.758    Verified 
+graph470.edge   2          SAT        12401      45686      12.703     Wrong 
+graph470.edge   6          SAT        17881      102528     213.127    Wrong 
+graph470.edge   12         SAT        20621      138595     211.831    Wrong 
+graph470.edge   60         SAT        28841      234244     297.734    Wrong 
+graph470.edge   105        SAT        31581      255019     393.962    Wrong 
+graph470.edge   420        SAT        37061      309121     342.699    Verified 
+graph491.edge   2          SAT        11379      39834      0.024      Wrong 
+graph491.edge   6          SAT        17067      93872      16.775     Wrong 
+graph491.edge   12         SAT        19911      128000     6.63       Verified 
+graph491.edge   60         SAT        28443      219010     83.776     Verified 
+graph491.edge   105        SAT        31287      238920     31.551     Verified 
+graph491.edge   420        SAT        36975      290114     79.97      Verified 
+graph506.edge   2          SAT        11859      41514      0.051      Wrong 
+graph506.edge   6          SAT        17787      97832      6.722      Wrong 
+graph506.edge   12         SAT        20751      133400     17.254     Verified 
+graph506.edge   60         SAT        29643      228250     49.735     Verified 
+graph506.edge   105        SAT        32607      249000     32.924     Verified 
+graph506.edge   420        SAT        38535      302354     72.081     Verified 
+graph522.edge   2          SAT        12243      42858      0.017      Wrong 
+graph522.edge   6          SAT        18363      101000     3.547      Wrong 
+graph522.edge   12         SAT        21423      137720     30.039     Verified 
+graph522.edge   60         SAT        30603      235642     30.939     Verified 
+graph522.edge   105        SAT        33663      257064     141.626    Wrong 
+graph522.edge   420        SAT        39783      312146     124.756    Verified 
+graph526.edge   2          SAT        12435      43530      0.04       Wrong 
+graph526.edge   6          SAT        18651      102584     19.892     Wrong 
+graph526.edge   12         SAT        21759      139880     19.014     Verified 
+graph526.edge   60         SAT        31083      239338     23.129     Verified 
+graph526.edge   105        SAT        34191      261096     23.126     Verified 
+graph526.edge   420        SAT        40407      317042     152.606    Verified 
+graph529.edge   2          SAT        12531      43866      0.192      Wrong 
+graph529.edge   6          SAT        18795      103376     4.906      Wrong 
+graph529.edge   12         SAT        21927      140960     94.196     Verified 
+graph529.edge   60         SAT        31323      241186     59.341     Verified 
+graph529.edge   105        SAT        34455      263112     95.696     Verified 
+graph529.edge   420        SAT        40719      319490     85.768     Verified 
