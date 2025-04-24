@@ -1,3 +1,4 @@
+from utils.common import add_cnf
 class ExactlyOneMethod:
         
     def __init__(self, var_manager):
@@ -8,7 +9,7 @@ class ExactlyOneMethod:
         self.at_most_one(cnf, literals)
         
     def at_least_one(self, cnf, literals):
-        cnf.append(literals)
+        add_cnf(literals)
                 
     def at_most_one(self, cnf, literals):
         pass

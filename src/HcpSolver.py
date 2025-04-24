@@ -2,11 +2,11 @@ from VariableManager import VariableManager
 from pysat.solvers import Solver
 from Graph import Graph
 from threading import Timer
-from utils.common import interrupt
+from utils.common import interrupt, n_cls
 import os
 import sys
 
-TIME_BUDGET = 600
+TIME_BUDGET = 1800
 
 class HcpSolver:
     def __init__(self, successor, exactly_one):
@@ -66,17 +66,7 @@ class HcpSolver:
         sat_solver.delete()
         return result
     
-    def solve_cadical(self, cnf):
-        
-        def write_to_input():
-            # Write data to the file
-            with open(input_file, 'w') as writer:
-                # Write each clause to the file
-                for clause in cnf:
-                    for literal in clause: writer.write(str(literal) + " ")
-                    writer.write("\n")
-            cnf.clear()
-            print(f"Input written to {input_file}.\n")
+    def solve_cadical(self):
             
         def handle_output():
             result_text = "TIMEOUT"
@@ -115,13 +105,13 @@ class HcpSolver:
             "vOfHC": None
         }
         
-        result["nofClauses"] = len(cnf)
+        result["nofClauses"] = n_cls
         result["nofVariables"] = self.var_manager.get_var()
         
         input_file = 'src/utils/all_cadical/input.txt'
         output_file = 'src/utils/all_cadical/output.txt'
         
-        write_to_input()
+        # write_to_input()
         print("Running SAT solver...")
         bashCommand = f"./src/utils/all_cadical/runlim -r {TIME_BUDGET + 10} -o src/utils/all_cadical/report.txt {sys.executable} src/utils/all_cadical/cadical.py"
         os.system(bashCommand)

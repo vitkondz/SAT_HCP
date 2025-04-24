@@ -1,6 +1,7 @@
 from exactlyone.ExactlyOneMethod import ExactlyOneMethod
 from pypblib import pblib
 from pypblib.pblib import PBConfig, Pb2cnf, WeightedLit
+from utils.common import add_cnf
 
 class EOPbLib(ExactlyOneMethod):
     
@@ -22,6 +23,6 @@ class EOPbLib(ExactlyOneMethod):
         max_var = pb2.encode_at_most_k(literals, 1, formula, max_var + 1)
         
         for clause in formula:
-            cnf.append(clause)
+            add_cnf(clause)
             
         self.var_manager.set_var(max_var)

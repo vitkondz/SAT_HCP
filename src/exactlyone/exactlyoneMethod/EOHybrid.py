@@ -1,5 +1,6 @@
 from exactlyone.ExactlyOneMethod import ExactlyOneMethod
 import math
+from utils.common import add_cnf
 
 THRESHOLD = 32 # threshold for cost function
 
@@ -11,7 +12,7 @@ class EOHybrid(ExactlyOneMethod):
     def PW(self, cnf, literals):
         for i in range(len(literals)):
             for j in range(i+1, len(literals)):
-                cnf.append([-literals[i], -literals[j]])
+                add_cnf([-literals[i], -literals[j]])
                 
     def BS(self, cnf, literals):
         n = len(literals)
@@ -19,7 +20,7 @@ class EOHybrid(ExactlyOneMethod):
         
         T = self.new_var()
         for i in range(n):
-            cnf.append([-literals[i], T if i < m else -T])
+            add_cnf([-literals[i], T if i < m else -T])
             
         self.PW(cnf, literals[:m]) if m <= 4 else self.BS(cnf, literals[:m])
             
@@ -34,8 +35,8 @@ class EOHybrid(ExactlyOneMethod):
         
         # Mij => Ri ∧ Cj
         for i in range(n):
-            cnf.append([-literals[i], R[i // m]])
-            cnf.append([-literals[i], C[i % m]])
+            add_cnf([-literals[i], R[i // m]])
+            add_cnf([-literals[i], C[i % m]])
             
         if m <= THRESHOLD:
             self.BS(cnf, R)

@@ -1,5 +1,5 @@
 from successor.SuccessorMethod import SuccessorMethod
-from utils.common import find_distance, find_distance_to_first
+from utils.common import find_distance, find_distance_to_first, add_cnf, init_cnf_writer, close_cnf_writer
 import math
 
 class BinaryAdder(SuccessorMethod):
@@ -32,19 +32,19 @@ class BinaryAdder(SuccessorMethod):
             # Pi != t if the minimum distance from vertex 1 to vertex i is greater than t
             for t in range(1, distance[vertex]+1):
                 binaryT = bin(t)[2:].zfill(m)[::-1]     # convert t to binary
-                cnf.append([-self.getP(vertex, bit) if binaryT[bit] == '1' else self.getP(vertex, bit) for bit in range(m)])
+                add_cnf([-self.getP(vertex, bit) if binaryT[bit] == '1' else self.getP(vertex, bit) for bit in range(m)])
             
             # Pi != t if the minimum distance from vertex i to vertex 1 is greater than n-t
             for t in range(n-distance_to_first[vertex]+2, n+1):
                 binaryT = bin(t)[2:].zfill(m)[::-1]
-                cnf.append([-self.getP(vertex, bit) if binaryT[bit] == '1' else self.getP(vertex, bit) for bit in range(m)])
+                add_cnf([-self.getP(vertex, bit) if binaryT[bit] == '1' else self.getP(vertex, bit) for bit in range(m)])
 
         # If start vertex of undirected graph has exactly 2 neighbors, neighbor positions can't be 3, 4, ..., n-1
         if len(graph.graph[start_v]) == 2 and not graph.is_directed:
             for neighbor in graph.graph[start_v]:
                 for t in range(3, n):
                     binaryT = bin(t)[2:].zfill(m)[::-1]
-                    cnf.append([-self.getP(neighbor, bit) if binaryT[bit] == '1' else self.getP(neighbor, bit) for bit in range(m)])             
+                    add_cnf([-self.getP(neighbor, bit) if binaryT[bit] == '1' else self.getP(neighbor, bit) for bit in range(m)])             
         
     def preprocessing_v2(self, cnf, graph, m):
         n = graph.v
@@ -61,7 +61,7 @@ class BinaryAdder(SuccessorMethod):
             binaryD = bin(d_v + 1)[2:].zfill(m)[::-1]     # convert d to binary
             for bit in range(m):
                 if binaryD[bit] == '1':
-                    cnf.append([self.getP(vertex, bit)] + 
+                    add_cnf([self.getP(vertex, bit)] + 
                                [self.getP(vertex, i) if binaryD[i] == '0' else -self.getP(vertex, i) for i in range(bit+1, m)])
                         
             # Pi <= n-t+1 if the minimun distance from vertex i to vertex 1 is t
@@ -69,7 +69,7 @@ class BinaryAdder(SuccessorMethod):
             binaryD = bin(n - d_v_to_first + 1)[2:].zfill(m)[::-1]
             for bit in range(m):
                 if binaryD[bit] == '0':
-                    cnf.append([-self.getP(vertex, bit)] +
+                    add_cnf([-self.getP(vertex, bit)] +
                                [self.getP(vertex, i) if binaryD[i] == '0' else -self.getP(vertex, i) for i in range(bit+1, m)])
             
         # If start vertex of undirected graph has exactly 2 neighbors, neighbor positions can't be 3, 4, ..., n-1
@@ -115,10 +115,10 @@ class BinaryAdder(SuccessorMethod):
                 else:
                     case2_n1.append(-self.getP(n1, bit))
         
-            cnf.append(case1_n1 + case2_n1)
-            cnf.append(case1_n1 + case2_n2)
-            cnf.append(case1_n2 + case2_n1)
-            cnf.append(case1_n2 + case2_n2)
+            add_cnf(case1_n1 + case2_n1)
+            add_cnf(case1_n1 + case2_n2)
+            add_cnf(case1_n2 + case2_n1)
+            add_cnf(case1_n2 + case2_n2)
         
     # add variables with default value to the cnf
     def add_default_variables(self, cnf, n, m, graph):
@@ -126,15 +126,15 @@ class BinaryAdder(SuccessorMethod):
         for i in range(1, n+1):
             for j in range(1, n+1):
                 if j not in graph.graph[i]:
-                    cnf.append([-self.getH(i, j)])
+                    add_cnf([-self.getH(i, j)])
         
         # P_start = 1 (00..01)            
         start_v = graph.start_vertex
         for bit in range(m):
             if bit == 0:
-                cnf.append([self.getP(start_v, bit)])
+                add_cnf([self.getP(start_v, bit)])
             else:
-                cnf.append([-self.getP(start_v, bit)])  
+                add_cnf([-self.getP(start_v, bit)])  
     
     # each vertex has exactly one outgoing arc - constraints (1)
     def vertex_outgoing_arcs(self, cnf, n):
@@ -158,7 +158,7 @@ class BinaryAdder(SuccessorMethod):
             clause = [-self.getH(i, start_v)]
             for j in range(1, i):
                 clause.append(self.getH(start_v, j))
-            cnf.append(clause)
+            add_cnf(clause)
     
     # H1i -> Pi = 2 (00..10) - constraints (3")
     def vertex_start(self, cnf, n, m, graph):
@@ -168,9 +168,9 @@ class BinaryAdder(SuccessorMethod):
                 continue
             for bit in range(m):
                 if bit == 1: 
-                    cnf.append([-self.getH(start_v, i), self.getP(i, bit)])
+                    add_cnf([-self.getH(start_v, i), self.getP(i, bit)])
                 else:
-                    cnf.append([-self.getH(start_v, i), -self.getP(i, bit)])
+                    add_cnf([-self.getH(start_v, i), -self.getP(i, bit)])
                     
     # Hi1 -> Pi = n - constraints (4")
     def vertex_end(self, cnf, n, m, graph):
@@ -181,9 +181,9 @@ class BinaryAdder(SuccessorMethod):
                 continue
             for bit in range(m):
                 if binaryN[bit] == '1':
-                    cnf.append([-self.getH(i, start_v), self.getP(i, bit)])
+                    add_cnf([-self.getH(i, start_v), self.getP(i, bit)])
                 else:
-                    cnf.append([-self.getH(i, start_v), -self.getP(i, bit)])
+                    add_cnf([-self.getH(i, start_v), -self.getP(i, bit)])
          
     # version final - 2 bit and top 4 bit incrementor - only use for graph more than 32 vertex
     def vertex_positions_final(self, cnf, n, m, graph):
@@ -194,80 +194,82 @@ class BinaryAdder(SuccessorMethod):
                     continue
                 
                 # bit == 0: # y0 = -x0
-                cnf.append([-self.getH(i, j), self.getP(i, 0), self.getP(j, 0)])
-                cnf.append([-self.getH(i, j), -self.getP(i, 0), -self.getP(j, 0)])
+                add_cnf([-self.getH(i, j), self.getP(i, 0), self.getP(j, 0)])
+                add_cnf([-self.getH(i, j), -self.getP(i, 0), -self.getP(j, 0)])
                 # bit == 1: # x0 -> y1 = -x1 and -x0 -> y1 = x1
-                cnf.append([-self.getH(i, j), -self.getP(i, 0), self.getP(i, 1), self.getP(j, 1)])
-                cnf.append([-self.getH(i, j), -self.getP(i, 0), -self.getP(i, 1), -self.getP(j, 1)])
-                cnf.append([-self.getH(i, j), self.getP(i, 0), self.getP(i, 1), -self.getP(j, 1)])
-                cnf.append([-self.getH(i, j), self.getP(i, 0), -self.getP(i, 1), self.getP(j, 1)]) 
+                add_cnf([-self.getH(i, j), -self.getP(i, 0), self.getP(i, 1), self.getP(j, 1)])
+                add_cnf([-self.getH(i, j), -self.getP(i, 0), -self.getP(i, 1), -self.getP(j, 1)])
+                add_cnf([-self.getH(i, j), self.getP(i, 0), self.getP(i, 1), -self.getP(j, 1)])
+                add_cnf([-self.getH(i, j), self.getP(i, 0), -self.getP(i, 1), self.getP(j, 1)]) 
                 
                 # 2-bit incrementor
                 for bit in range(2, m-4, 2):
                     # ¬Yi−1 ∧ Xi−1 ⇒ Yi = ¬Xi
                     # remove the clause of -getP(j, bit) and -getP(j, bit)
-                    cnf.append([-self.getH(i, j), self.getP(j, bit-1), -self.getP(i, bit-1), self.getP(j, bit), self.getP(i, bit)])
+                    add_cnf([-self.getH(i, j), self.getP(j, bit-1), -self.getP(i, bit-1), self.getP(j, bit), self.getP(i, bit)])
                     
                     # ¬Yi−1 ∧ Xi−1 ∧ Xi ⇒ Yi+1 = ¬Xi+1
-                    cnf.append([-self.getH(i, j), self.getP(j, bit-1), -self.getP(i, bit-1), -self.getP(i, bit), self.getP(j, bit+1), self.getP(i, bit+1)])       # so far so good
-                    cnf.append([-self.getH(i, j), self.getP(j, bit-1), -self.getP(i, bit-1), -self.getP(i, bit), -self.getP(j, bit+1), -self.getP(i, bit+1)])     # so far so good
+                    add_cnf([-self.getH(i, j), self.getP(j, bit-1), -self.getP(i, bit-1), -self.getP(i, bit), self.getP(j, bit+1), self.getP(i, bit+1)])       # so far so good
+                    add_cnf([-self.getH(i, j), self.getP(j, bit-1), -self.getP(i, bit-1), -self.getP(i, bit), -self.getP(j, bit+1), -self.getP(i, bit+1)])     # so far so good
                     
                     # otherwise: Yi-1 -> Yi = Xi
-                    cnf.append([-self.getH(i, j), -self.getP(j, bit-1), -self.getP(i, bit), self.getP(j, bit)])
-                    cnf.append([-self.getH(i, j), -self.getP(j, bit-1), self.getP(i, bit), -self.getP(j, bit)])
+                    add_cnf([-self.getH(i, j), -self.getP(j, bit-1), -self.getP(i, bit), self.getP(j, bit)])
+                    add_cnf([-self.getH(i, j), -self.getP(j, bit-1), self.getP(i, bit), -self.getP(j, bit)])
                     
                     # otherwise: -Xi-1 -> Yi = Xi
-                    cnf.append([-self.getH(i, j), self.getP(i, bit-1), -self.getP(i, bit), self.getP(j, bit)])
-                    cnf.append([-self.getH(i, j), self.getP(i, bit-1), self.getP(i, bit), -self.getP(j, bit)])
+                    add_cnf([-self.getH(i, j), self.getP(i, bit-1), -self.getP(i, bit), self.getP(j, bit)])
+                    add_cnf([-self.getH(i, j), self.getP(i, bit-1), self.getP(i, bit), -self.getP(j, bit)])
                     
                     #special: -Xi -> Yi+1 = Xi+1
-                    cnf.append([-self.getH(i, j), self.getP(i, bit), self.getP(j, bit+1), -self.getP(i, bit+1)])
-                    cnf.append([-self.getH(i, j), self.getP(i, bit), -self.getP(j, bit+1), self.getP(i, bit+1)])
+                    add_cnf([-self.getH(i, j), self.getP(i, bit), self.getP(j, bit+1), -self.getP(i, bit+1)])
+                    add_cnf([-self.getH(i, j), self.getP(i, bit), -self.getP(j, bit+1), self.getP(i, bit+1)])
                     
                     #special: Yi -> Yi+1 = Xi+1
-                    cnf.append([-self.getH(i, j), -self.getP(j, bit), self.getP(j, bit+1), -self.getP(i, bit+1)])
-                    cnf.append([-self.getH(i, j), -self.getP(j, bit), -self.getP(j, bit+1), self.getP(i, bit+1)])
+                    add_cnf([-self.getH(i, j), -self.getP(j, bit), self.getP(j, bit+1), -self.getP(i, bit+1)])
+                    add_cnf([-self.getH(i, j), -self.getP(j, bit), -self.getP(j, bit+1), self.getP(i, bit+1)])
                 
                 # the last bit if remain using 1-bit incrementor
                 if m%2 == 1:
                     bit = m-5
                     #carry = 1, -Yi-1 ^ Xi-1 -> Yi = -Xi
-                    cnf.append([-self.getH(i, j), self.getP(j, bit-1), -self.getP(i, bit-1), self.getP(j, bit), self.getP(i, bit)])
-                    cnf.append([-self.getH(i, j), self.getP(j, bit-1), -self.getP(i, bit-1), -self.getP(j, bit), -self.getP(i, bit)])
+                    add_cnf([-self.getH(i, j), self.getP(j, bit-1), -self.getP(i, bit-1), self.getP(j, bit), self.getP(i, bit)])
+                    add_cnf([-self.getH(i, j), self.getP(j, bit-1), -self.getP(i, bit-1), -self.getP(j, bit), -self.getP(i, bit)])
                     # carry = 0, -Xi-1 -> Yi = Xi
-                    cnf.append([-self.getH(i, j), self.getP(i, bit-1), self.getP(j, bit), -self.getP(i, bit)])
-                    cnf.append([-self.getH(i, j), self.getP(i, bit-1), -self.getP(j, bit), self.getP(i, bit)])
+                    add_cnf([-self.getH(i, j), self.getP(i, bit-1), self.getP(j, bit), -self.getP(i, bit)])
+                    add_cnf([-self.getH(i, j), self.getP(i, bit-1), -self.getP(j, bit), self.getP(i, bit)])
                     # carry = 0, Yi-1 -> Yi = Xi
-                    cnf.append([-self.getH(i, j), -self.getP(j, bit-1), self.getP(j, bit), -self.getP(i, bit)])
-                    cnf.append([-self.getH(i, j), -self.getP(j, bit-1), -self.getP(j, bit), self.getP(i, bit)])
+                    add_cnf([-self.getH(i, j), -self.getP(j, bit-1), self.getP(j, bit), -self.getP(i, bit)])
+                    add_cnf([-self.getH(i, j), -self.getP(j, bit-1), -self.getP(j, bit), self.getP(i, bit)])
                     
                 # top 4 bits 
                 bit = m
-                cnf.append([-self.getH(i, j), self.getP(i, bit-1), self.getP(i, bit-4), -self.getP(j, bit-1)])                                  #1
-                cnf.append([-self.getH(i, j), self.getP(i, bit-1), -self.getP(j, bit-1), -self.getP(j, bit-2)])                                 #2
-                cnf.append([-self.getH(i, j), self.getP(i, bit-1), -self.getP(j, bit-1), -self.getP(j, bit-3)])                                 #3
-                cnf.append([-self.getH(i, j), self.getP(i, bit-1), -self.getP(j, bit-1), -self.getP(j, bit-4)])                                 #4
-                cnf.append([-self.getH(i, j), self.getP(i, bit-3), -self.getP(j, bit-3), -self.getP(j, bit-4)])                                 #5
-                cnf.append([-self.getH(i, j), -self.getP(i, bit-4), -self.getP(j, bit-5), self.getP(j, bit-4)])                                 #6
-                cnf.append([-self.getH(i, j), self.getP(i, bit-2), -self.getP(i, bit-3), self.getP(j, bit-2), self.getP(j, bit-3)])                  #7
-                cnf.append([-self.getH(i, j), self.getP(i, bit-4), self.getP(i, bit-5), -self.getP(j, bit-4)])                                  #8
-                cnf.append([-self.getH(i, j), -self.getP(i, bit-1), self.getP(j, bit-1)])                                                  #9
-                cnf.append([-self.getH(i, j), -self.getP(i, bit-2), -self.getP(i, bit-3), -self.getP(j, bit-2), self.getP(j, bit-3)])                #10
-                cnf.append([-self.getH(i, j), -self.getP(i, bit-3), -self.getP(i, bit-4), -self.getP(i, bit-5), self.getP(j, bit-5), -self.getP(j, bit-3)]) #11
-                cnf.append([-self.getH(i, j), self.getP(i, bit-2), self.getP(i, bit-4), -self.getP(j, bit-2)])                                  #12
-                cnf.append([-self.getH(i, j), self.getP(i, bit-3), self.getP(i, bit-4), -self.getP(j, bit-3)])                                  #13
-                cnf.append([-self.getH(i, j), self.getP(i, bit-2), -self.getP(j, bit-2), -self.getP(j, bit-3)])                                 #14
-                cnf.append([-self.getH(i, j), self.getP(i, bit-2), -self.getP(j, bit-2), -self.getP(j, bit-4)])                                 #15
-                cnf.append([-self.getH(i, j), -self.getP(i, bit-4), self.getP(i, bit-5), self.getP(j, bit-4)])                                  #16
-                cnf.append([-self.getH(i, j), self.getP(i, bit-1), -self.getP(i, bit-2), self.getP(j, bit-1), self.getP(j, bit-2)])                  #17
-                cnf.append([-self.getH(i, j), self.getP(i, bit-4), -self.getP(i, bit-5), self.getP(j, bit-5), self.getP(j, bit-4)])                  #18
-                cnf.append([-self.getH(i, j), self.getP(i, bit-4), -self.getP(j, bit-5), -self.getP(j, bit-4)])                                 #19
-                cnf.append([-self.getH(i, j), -self.getP(i, bit-1), -self.getP(i, bit-2), -self.getP(j, bit-1), self.getP(j, bit-2)])                #20
-                cnf.append([-self.getH(i, j), self.getP(i, bit-3), -self.getP(i, bit-4), -self.getP(i, bit-5), self.getP(j, bit-5), self.getP(j, bit-3)]) #21
+                add_cnf([-self.getH(i, j), self.getP(i, bit-1), self.getP(i, bit-4), -self.getP(j, bit-1)])                                  #1
+                add_cnf([-self.getH(i, j), self.getP(i, bit-1), -self.getP(j, bit-1), -self.getP(j, bit-2)])                                 #2
+                add_cnf([-self.getH(i, j), self.getP(i, bit-1), -self.getP(j, bit-1), -self.getP(j, bit-3)])                                 #3
+                add_cnf([-self.getH(i, j), self.getP(i, bit-1), -self.getP(j, bit-1), -self.getP(j, bit-4)])                                 #4
+                add_cnf([-self.getH(i, j), self.getP(i, bit-3), -self.getP(j, bit-3), -self.getP(j, bit-4)])                                 #5
+                add_cnf([-self.getH(i, j), -self.getP(i, bit-4), -self.getP(j, bit-5), self.getP(j, bit-4)])                                 #6
+                add_cnf([-self.getH(i, j), self.getP(i, bit-2), -self.getP(i, bit-3), self.getP(j, bit-2), self.getP(j, bit-3)])                  #7
+                add_cnf([-self.getH(i, j), self.getP(i, bit-4), self.getP(i, bit-5), -self.getP(j, bit-4)])                                  #8
+                add_cnf([-self.getH(i, j), -self.getP(i, bit-1), self.getP(j, bit-1)])                                                  #9
+                add_cnf([-self.getH(i, j), -self.getP(i, bit-2), -self.getP(i, bit-3), -self.getP(j, bit-2), self.getP(j, bit-3)])                #10
+                add_cnf([-self.getH(i, j), -self.getP(i, bit-3), -self.getP(i, bit-4), -self.getP(i, bit-5), self.getP(j, bit-5), -self.getP(j, bit-3)]) #11
+                add_cnf([-self.getH(i, j), self.getP(i, bit-2), self.getP(i, bit-4), -self.getP(j, bit-2)])                                  #12
+                add_cnf([-self.getH(i, j), self.getP(i, bit-3), self.getP(i, bit-4), -self.getP(j, bit-3)])                                  #13
+                add_cnf([-self.getH(i, j), self.getP(i, bit-2), -self.getP(j, bit-2), -self.getP(j, bit-3)])                                 #14
+                add_cnf([-self.getH(i, j), self.getP(i, bit-2), -self.getP(j, bit-2), -self.getP(j, bit-4)])                                 #15
+                add_cnf([-self.getH(i, j), -self.getP(i, bit-4), self.getP(i, bit-5), self.getP(j, bit-4)])                                  #16
+                add_cnf([-self.getH(i, j), self.getP(i, bit-1), -self.getP(i, bit-2), self.getP(j, bit-1), self.getP(j, bit-2)])                  #17
+                add_cnf([-self.getH(i, j), self.getP(i, bit-4), -self.getP(i, bit-5), self.getP(j, bit-5), self.getP(j, bit-4)])                  #18
+                add_cnf([-self.getH(i, j), self.getP(i, bit-4), -self.getP(j, bit-5), -self.getP(j, bit-4)])                                 #19
+                add_cnf([-self.getH(i, j), -self.getP(i, bit-1), -self.getP(i, bit-2), -self.getP(j, bit-1), self.getP(j, bit-2)])                #20
+                add_cnf([-self.getH(i, j), self.getP(i, bit-3), -self.getP(i, bit-4), -self.getP(i, bit-5), self.getP(j, bit-5), self.getP(j, bit-3)]) #21
                 
     def build_clauses(self, cnf, graph):
         n = graph.v
         m = math.ceil(math.log2(n)) if math.log2(n) != int(math.log2(n)) else int(math.log2(n)) + 1
+        
+        init_cnf_writer()
         
         if self.is_preprocessing:
             self.preprocessing_v2(cnf, graph, m)
@@ -282,5 +284,7 @@ class BinaryAdder(SuccessorMethod):
         self.vertex_start(cnf, n, m, graph)
         self.vertex_end(cnf, n, m, graph)
         self.vertex_positions_final(cnf, n, m, graph) # for final version
+        
+        n_clause = close_cnf_writer()
 
-        return cnf
+        return cnf if len(cnf) != 0 else n_clause
